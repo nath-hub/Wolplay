@@ -18,9 +18,12 @@ jobs:
           port: 22
           script: |
             cd /var/www/wolplay
+
             # Récupérer les changements depuis le repo staging
+
             git fetch staging backend_staging
             git reset --hard staging/backend_staging
+
 
             # Installation et nettoyage
             composer install --no-dev --optimize-autoloader
