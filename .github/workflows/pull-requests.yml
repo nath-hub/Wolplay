@@ -18,14 +18,16 @@ jobs:
       # 🔁 Sync vers le repo de destination (nath-hub)
       # Même si le repo est public, le TOKEN est requis pour le push
       - name: Push to Main repository
+        env:
+            MY_TOKEN: ${{ secrets.TOKEN }}
         run: |
           git config --global user.name "Wolplay CI Bot"
           git config --global user.email "ci@wolplay.com"
 
-          # On utilise le token pour avoir le droit d'écriture
-          git remote add target https://x-access-token:${{ secrets.TOKEN }}@github.com/nath-hub/Wolplay.git
+          # On injecte le token directement dans l'URL de manière sécurisée
+          git remote add target https://x-access-token:${MY_TOKEN}@github.com/nath-hub/Wolplay.git
 
-          # On force la mise à jour du main de nath-hub avec le backend_staging de Neihos
+          # On pousse la branche locale backend_staging vers le main distant
           git push target backend_staging:main --force
 
       # 🚀 Déploiement serveur via SSH
