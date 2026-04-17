@@ -1,9 +1,9 @@
-name: Sync + Deploy
+name: Sync to Main and Deploy
 
 on:
   push:
     branches:
-      - main
+      - backend_staging
 
 jobs:
   sync-and-deploy:
@@ -11,20 +11,26 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # 🔁 Sync vers 2e repo
-      - name: Push to second repository (backend_staging)
+      # 🔁 Sync vers le repo de destination (nath-hub)
+      # Même si le repo est public, le TOKEN est requis pour le push
+      - name: Push to Main repository
         run: |
-          git config --global user.name "ci-bot"
-          git config --global user.email "ci@bot.com"
+          git config --global user.name "Wolplay CI Bot"
+          git config --global user.email "ci@wolplay.com"
 
-          git remote add staging https://x-access-token:${{ secrets.TOKEN }}@github.com/Neihos/wolplay.git
-          git push staging main:backend_staging --force
+          # On utilise le token pour avoir le droit d'écriture
+          git remote add target https://x-access-token:${{ secrets.TOKEN }}@github.com/nath-hub/Wolplay.git
+
+          # On force la mise à jour du main de nath-hub avec le backend_staging de Neihos
+          git push target backend_staging:main --force
 
       # 🚀 Déploiement serveur via SSH
       - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.6
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
@@ -32,8 +38,19 @@ jobs:
           port: 22
           script: |
             cd /var/www/wolplay || exit
-            git pull origin main
+
+            # Récupération du nouveau code sur le serveur
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Optimisations Laravel pour Wolplay
             composer install --no-dev --optimize-autoloader
             php artisan migrate --force
-            php artisan config:clear
-            php artisan cache:clear
+
+            # On met en cache pour les performances (indispensable en prod)
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # Si tu gères des images (comptes premium), on s'assure du lien symbolique
+            php artisan storage:link --quiet
