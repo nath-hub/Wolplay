@@ -17,7 +17,13 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           script: |
-            cd /var/www/wolplay
+            mkdir -p /var/www/wolplay
+            cd /var/www/wolplay || exit
+
+            # Si le dossier est vide (pas encore de git), on clone
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/Neihos/wolplay.git .
+            fi
 
             # Récupérer les changements depuis le repo staging
 
@@ -27,6 +33,8 @@ jobs:
 
             # Installation et nettoyage
             composer install --no-dev --optimize-autoloader
+            # Remplacez /usr/local/bin/composer par le chemin réel (tapez 'which composer' sur votre serveur pour le trouver)
+            php8.2 /usr/local/bin/composer install --no-dev --optimize-autoloader
             php artisan migrate --force
             php artisan config:cache
             php artisan route:cache
