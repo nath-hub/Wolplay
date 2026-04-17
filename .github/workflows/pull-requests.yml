@@ -1,12 +1,39 @@
-name: Pull Requests
+name: Sync + Deploy
 
 on:
-  pull_request_target:
-    types: [opened]
-
-permissions:
-  pull-requests: write
+  push:
+    branches:
+      - main
 
 jobs:
-  uneditable:
-    uses: laravel/.github/.github/workflows/pull-requests.yml@main
+  sync-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 🔁 Sync vers 2e repo
+      - name: Push to second repository (backend_staging)
+        run: |
+          git config --global user.name "ci-bot"
+          git config --global user.email "ci@bot.com"
+
+          git remote add staging https://x-access-token:${{ secrets.TOKEN }}@github.com/Neihos/wolplay.git
+          git push staging main:backend_staging --force
+
+      # 🚀 Déploiement serveur via SSH
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: 22
+          script: |
+            cd /var/www/wolplay || exit
+            git pull origin main
+            composer install --no-dev --optimize-autoloader
+            php artisan migrate --force
+            php artisan config:clear
+            php artisan cache:clear
