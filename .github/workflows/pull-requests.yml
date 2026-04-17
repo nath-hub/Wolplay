@@ -32,3 +32,6 @@ jobs:
             php artisan route:cache
             php artisan view:cache
 
+
+            # git merge staging/backend_staging --allow-unrelated-histories
+            # git push staging main:backend_staging --force
