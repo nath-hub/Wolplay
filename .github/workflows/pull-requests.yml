@@ -17,39 +17,50 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           script: |
-            mkdir -p /var/www/backend
+            # 1. Entrer dans le dossier (doit avoir été créé via sudo mkdir)
             cd /var/www/backend || exit
 
-            # Si le dossier est vide (pas encore de git), on clone
+            # 2. Initialisation Git si le dossier est vide
             if [ ! -d ".git" ]; then
+              echo "🚀 Premier déploiement : Clonage du dépôt..."
               git clone https://github.com/Neihos/wolplay.git .
             fi
 
-            # Récupérer les changements depuis le repo staging
+            # 3. Mise à jour du code
+            echo "📥 Récupération du code..."
+            git fetch origin backend_staging
+            git reset --hard origin/backend_staging
 
-            git fetch staging backend_staging
-            git reset --hard staging/backend_staging
+            # 4. Détection dynamique des outils
+            # On cherche PHP 8.2 en priorité, sinon le PHP par défaut
+            PHP_BIN=$(which php8.2 || which php)
+            COMPOSER_BIN=$(which composer || echo "/usr/local/bin/composer")
 
+            echo "🛠️ Utilisation de : $PHP_BIN et $COMPOSER_BIN"
 
-            # Installation et nettoyage
-            composer install --no-dev --optimize-autoloader
-            # Remplacez /usr/local/bin/composer par le chemin réel (tapez 'which composer' sur votre serveur pour le trouver)
-            php8.2 /usr/local/bin/composer install --no-dev --optimize-autoloader
+            # 5. Installation des dépendances
+            # On ignore les scripts pour éviter les erreurs de dossier non configuré au début
+            $PHP_BIN $COMPOSER_BIN install --no-dev --optimize-autoloader --no-scripts
 
-            # On essaie de trouver PHP dynamiquement
-            export PHP_PATH=$(which php8.2 || which php)
-            export COMPOSER_PATH=$(which composer || echo "/usr/local/bin/composer")
+            # 6. Configuration Laravel (Artisan)
+            echo "⚙️ Configuration de Laravel..."
 
-            $PHP_PATH $COMPOSER_PATH install --no-dev --optimize-autoloader
+            # Si le .env n'existe pas, on le crée à partir de l'exemple
+            if [ ! -f ".env" ]; then
+                cp .env.example .env
+                $PHP_BIN artisan key:generate
+            fi
 
-            # Artisan : Mise à jour de la base de données et cache
-            $PHP_PATH artisan migrate --force
-            $PHP_PATH artisan config:cache
-            $PHP_PATH artisan route:cache
-            $PHP_PATH artisan view:cache
+            $PHP_BIN artisan migrate --force
+            $PHP_BIN artisan config:cache
+            $PHP_BIN artisan route:cache
+            $PHP_BIN artisan view:cache
 
-            # Droits pour le stockage (essentiel pour les photos Wolplay)
+            # 7. Gestion des permissions pour Wolplay
+            echo "🔐 Ajustement des permissions..."
             chmod -R 775 storage bootstrap/cache
+
+            echo "✅ Déploiement terminé avec succès !"
 
 
             # git merge staging/backend_staging --allow-unrelated-histories
