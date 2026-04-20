@@ -35,10 +35,21 @@ jobs:
             composer install --no-dev --optimize-autoloader
             # Remplacez /usr/local/bin/composer par le chemin réel (tapez 'which composer' sur votre serveur pour le trouver)
             php8.2 /usr/local/bin/composer install --no-dev --optimize-autoloader
-            php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+
+            # On essaie de trouver PHP dynamiquement
+            export PHP_PATH=$(which php8.2 || which php)
+            export COMPOSER_PATH=$(which composer || echo "/usr/local/bin/composer")
+
+            $PHP_PATH $COMPOSER_PATH install --no-dev --optimize-autoloader
+
+            # Artisan : Mise à jour de la base de données et cache
+            $PHP_PATH artisan migrate --force
+            $PHP_PATH artisan config:cache
+            $PHP_PATH artisan route:cache
+            $PHP_PATH artisan view:cache
+
+            # Droits pour le stockage (essentiel pour les photos Wolplay)
+            chmod -R 775 storage bootstrap/cache
 
 
             # git merge staging/backend_staging --allow-unrelated-histories
