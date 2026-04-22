@@ -49,6 +49,11 @@ jobs:
             git reset --hard origin/backend_staging
 
             # 5. Installation & Laravel
+            mkdir -p .tmp
+            export TMPDIR=$(pwd)/.tmp
+
+            # 6. Installation avec les droits forcés
+            echo "📦 Installation des dépendances..."
             composer install --no-dev --optimize-autoloader --no-interaction
 
             if [ ! -f ".env" ]; then
