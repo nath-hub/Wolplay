@@ -19,21 +19,25 @@ jobs:
           script: |
             cd /var/www/backend || exit
 
-            # On configure SSH pour accepter GitHub sans poser de question
+            # 1. Configurer SSH pour reconnaître GitHub
             mkdir -p ~/.ssh
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
-            # Initialisation Git via SSH
+            # 2. Démarrer l'agent SSH et ajouter ta clé pour la session
+            eval $(ssh-agent -s)
+            ssh-add ~/.ssh/id_ed25519
+
+            # 3. Initialisation Git via SSH
             if [ ! -d ".git" ]; then
               echo "🚀 Premier clonage via SSH..."
               git clone git@github.com:Neihos/wolplay.git .
             fi
 
-            # Mise à jour
+            # 4. Mise à jour
             git fetch origin backend_staging
             git reset --hard origin/backend_staging
 
-            # Installation & Laravel (Chemins standards)
+            # 5. Installation & Laravel
             composer install --no-dev --optimize-autoloader --no-interaction
 
             if [ ! -f ".env" ]; then
@@ -46,7 +50,7 @@ jobs:
             php artisan route:cache
             php artisan view:cache
 
-            # Permissions
+            # 6. Permissions
             chmod -R 775 storage bootstrap/cache
 
 
