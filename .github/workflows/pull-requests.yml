@@ -21,6 +21,13 @@ jobs:
           script: |
             cd /var/www/backend || exit
 
+            # On force tout le dossier à t'appartenir, TOI
+            sudo chown -R $USER:$USER .
+
+            # On donne les droits d'écriture au groupe web (Nginx) uniquement là où c'est vital
+            sudo chmod -R 775 storage bootstrap/cache
+            sudo chgrp -R www-data storage bootstrap/cache
+
             # 1. Configurer SSH pour reconnaître GitHub
             mkdir -p ~/.ssh
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
