@@ -17,50 +17,33 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           script: |
-            # 1. Entrer dans le dossier (doit avoir été créé via sudo mkdir)
             cd /var/www/backend || exit
 
-            # 2. Initialisation Git si le dossier est vide
+            # Initialisation Git
             if [ ! -d ".git" ]; then
-              echo "🚀 Premier déploiement : Clonage du dépôt..."
               git clone https://github.com/Neihos/wolplay.git .
             fi
 
-            # 3. Mise à jour du code
-            echo "📥 Récupération du code..."
+            # Mise à jour
             git fetch origin backend_staging
             git reset --hard origin/backend_staging
 
-            # 4. Détection dynamique des outils
-            # On cherche PHP 8.2 en priorité, sinon le PHP par défaut
-            PHP_BIN=$(which php8.2 || which php)
-            COMPOSER_BIN=$(which composer || echo "/usr/local/bin/composer")
+            # Installation (Chemins standards maintenant que c'est installé)
+            composer install --no-dev --optimize-autoloader --no-interaction
 
-            echo "🛠️ Utilisation de : $PHP_BIN et $COMPOSER_BIN"
-
-            # 5. Installation des dépendances
-            # On ignore les scripts pour éviter les erreurs de dossier non configuré au début
-            $PHP_BIN $COMPOSER_BIN install --no-dev --optimize-autoloader --no-scripts
-
-            # 6. Configuration Laravel (Artisan)
-            echo "⚙️ Configuration de Laravel..."
-
-            # Si le .env n'existe pas, on le crée à partir de l'exemple
+            # Laravel
             if [ ! -f ".env" ]; then
-                cp .env.example .env
-                $PHP_BIN artisan key:generate
+              cp .env.example .env
+              php artisan key:generate
             fi
 
-            $PHP_BIN artisan migrate --force
-            $PHP_BIN artisan config:cache
-            $PHP_BIN artisan route:cache
-            $PHP_BIN artisan view:cache
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
 
-            # 7. Gestion des permissions pour Wolplay
-            echo "🔐 Ajustement des permissions..."
+            # Permissions
             chmod -R 775 storage bootstrap/cache
-
-            echo "✅ Déploiement terminé avec succès !"
 
 
             # git merge staging/backend_staging --allow-unrelated-histories
