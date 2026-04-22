@@ -19,24 +19,23 @@ jobs:
           script: |
             cd /var/www/backend || exit
 
-            # Initialisation Git avec Token pour bypass l'authentification
-            if [ ! -d ".git" ]; then
-              echo "🚀 Premier clonage avec Token..."
-              # REMPLACE TOKEN par ton vrai token généré à l'étape 1
-              git clone https://TOKEN@github.com/Neihos/wolplay.git .
-            fi
+            # On configure SSH pour accepter GitHub sans poser de question
+            mkdir -p ~/.ssh
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
-            # On s'assure que l'URL utilise toujours le token pour les fetch futurs
-            git remote set-url origin https://TOKEN@github.com/Neihos/wolplay.git
+            # Initialisation Git via SSH
+            if [ ! -d ".git" ]; then
+              echo "🚀 Premier clonage via SSH..."
+              git clone git@github.com:Neihos/wolplay.git .
+            fi
 
             # Mise à jour
             git fetch origin backend_staging
             git reset --hard origin/backend_staging
 
-            # Installation
+            # Installation & Laravel (Chemins standards)
             composer install --no-dev --optimize-autoloader --no-interaction
 
-            # Laravel
             if [ ! -f ".env" ]; then
               cp .env.example .env
               php artisan key:generate
