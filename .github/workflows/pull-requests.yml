@@ -25,9 +25,18 @@ jobs:
             mkdir -p ~/.ssh
             ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
 
-            # 2. Démarrer l'agent SSH et ajouter ta clé pour la session
+            # 2. Démarrer l'agent et charger la clé existante (automatique)
             eval $(ssh-agent -s)
-            ssh-add ~/.ssh/id_ed25519
+
+            # On cherche n'importe quelle clé privée disponible dans .ssh
+            if [ -f ~/.ssh/id_ed25519 ]; then
+                ssh-add ~/.ssh/id_ed25519
+            elif [ -f ~/.ssh/id_rsa ]; then
+                ssh-add ~/.ssh/id_rsa
+            else
+                echo "❌ Erreur : Aucune clé SSH trouvée dans ~/.ssh/"
+                exit 1
+            fi
 
             # 3. Initialisation Git via SSH
             if [ ! -d ".git" ]; then
