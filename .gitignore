@@ -1,4 +1,7 @@
 /.phpunit.cache
+!storage/
+!storage/api-docs/
+!storage/api-docs/**
 /node_modules
 /public/build
 /public/hot
