@@ -9,7 +9,7 @@ use OpenApi\Attributes as OA; // CORRECT pour les attributs #[]
     version: "1.0.0",
     description: "Documentation de l'API Wolplay."
 )]
-#[OA\Server(url: "http://127.0.0.1:8000")]
+// #[OA\Server(url: env('APP_URL'), description: "Serveur de production")]
 #[OA\SecurityScheme(
     securityScheme: "bearerAuth",
     type: "http",
