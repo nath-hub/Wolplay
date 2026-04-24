@@ -31,7 +31,7 @@ Route::middleware('guest')->group(function () {
         ->middleware(['signed', 'throttle:6,1'])
         ->name('verification.verify');
 // ── Authenticated routes ───────────────────────────────────────────────────────
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
     // Déconnexion
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
