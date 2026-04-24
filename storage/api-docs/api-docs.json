@@ -33,10 +33,6 @@
                                         "type": "string",
                                         "format": "password",
                                         "example": "votre_mot_de_passe"
-                                    },
-                                    "remember": {
-                                        "type": "boolean",
-                                        "example": true
                                     }
                                 },
                                 "type": "object"

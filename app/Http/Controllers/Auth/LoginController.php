@@ -25,8 +25,7 @@ class LoginController extends Controller
             required: ['login', 'password'],
             properties: [
                 new OA\Property(property: 'login', type: 'string', description: 'Email ou Pseudo de l\'utilisateur', example: 'john_doe'),
-                new OA\Property(property: 'password', type: 'string', format: 'password', example: 'votre_mot_de_passe'),
-                new OA\Property(property: 'remember', type: 'boolean', example: true)
+                new OA\Property(property: 'password', type: 'string', format: 'password', example: 'votre_mot_de_passe')
             ]
         )
     )]
@@ -56,13 +55,13 @@ class LoginController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'login' => ['required', 'string'],   // email OR pseudo
+            'login' => ['required', 'string'], // email OR pseudo
             'password' => ['required', 'string'],
         ]);
 
         $this->ensureIsNotRateLimited($request);
 
-        // Determine whether the user typed an e-mail or a pseudo
+        // Déterminer si c'est un email ou un pseudo
         $field = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'pseudo';
 
         $credentials = [
@@ -70,18 +69,7 @@ class LoginController extends Controller
             'password' => $request->password,
         ];
 
-        //on verifie si le compte est verifier
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            if (!Auth::user()->hasVerifiedEmail()) {
-                Auth::logout();
-                return response()->json([
-                    'success' => false,
-                    'status' => 400,
-                    'message' => 'Veuillez vérifier votre adresse email avant de vous connecter.',
-                ], 400);
-            }
-        }
-
+        // 1. Tentative de connexion
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey($request));
 
@@ -92,29 +80,47 @@ class LoginController extends Controller
             ], 400);
         }
 
-        // Block banned users
-        if (Auth::user()->is_banned) {
+        $user = Auth::user();
+
+        // 2. Vérification de l'email
+        if (!$user->hasVerifiedEmail()) {
+            Auth::logout();
+            return response()->json([
+                'success' => false,
+                'status' => 400,
+                'message' => 'Veuillez vérifier votre adresse email avant de vous connecter.',
+            ], 400);
+        }
+
+        // 3. Vérification du bannissement
+        if ($user->is_banned) {
             Auth::logout();
             return response()->json([
                 'success' => false,
                 'status' => 400,
                 'message' => 'Votre compte a été suspendu. Contactez le support.',
-            ]);
+            ], 400);
         }
 
+        // 4. Succès : Nettoyage du RateLimiter et mise à jour login
         RateLimiter::clear($this->throttleKey($request));
+        $user->update(['last_login_at' => now()]);
 
-        Auth::user()->update(['last_login_at' => now()]);
-
-        $request->session()->regenerate();
+        /** * CHANGEMENT ICI : Suppression de la session et génération du Token
+         * Cela règle l'erreur "Session store not set"
+         */
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'success' => true,
             'status' => 201,
-            'message' => 'Votre compte a été cree avec succes.',
-            'data' => Auth::user(),
-        ]);
+            'message' => 'Connexion réussie.',
+            'token' => $token,
+            'data' => $user,
+        ], 201);
     }
+
+
 
     #[OA\Post(
         path: '/api/logout',
