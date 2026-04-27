@@ -22,7 +22,7 @@ class EmailVerificationController extends Controller
 
             // 2. Vérifier si le hash correspond
             if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-                return redirect(config('app.frontend_url') . '/login?status=invalid_token');
+                return redirect(config('app.frontend_url') . '/login?status=error&reason=invalid');
             }
 
             // 3. Vérifier si l'utilisateur est déjà vérifié
@@ -45,7 +45,7 @@ class EmailVerificationController extends Controller
 
             // 5. Redirection vers le frontend React
 
-            return redirect(config('app.frontend_url') . '/login?status=error');
+            return redirect(config('app.frontend_url') . '/login?status=error&reason=expired');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect(config('app.frontend_url') . '/login?status=invalid_token');
         }
