@@ -93,11 +93,11 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "login",
+                                    "identifier",
                                     "password"
                                 ],
                                 "properties": {
-                                    "login": {
+                                    "identifier": {
                                         "description": "Email ou Pseudo de l'utilisateur",
                                         "type": "string",
                                         "example": "john_doe"
@@ -132,9 +132,22 @@
                                             "type": "string",
                                             "example": "Votre compte a été connecté avec succès."
                                         },
-                                        "data": {
+                                        "user": {
                                             "type": "object",
                                             "additionalProperties": true
+                                        },
+                                        "accessToken": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                                        },
+                                        "tokenType": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "expiresAt": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2024-07-01T12:00:00Z"
                                         }
                                     },
                                     "type": "object"
@@ -833,6 +846,96 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/api/auth/check-pseudo": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Vérifier si un pseudo existe déjà",
+                "description": "Retourne true si le pseudo est disponible (200), false s'il est déjà pris (409).",
+                "operationId": "fc306415c0443e1d17c120030127d2fe",
+                "parameters": [
+                    {
+                        "name": "pseudo",
+                        "in": "query",
+                        "description": "Le pseudo à vérifier",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pseudo disponible",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "boolean"
+                                },
+                                "example": true
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Pseudo déjà utilisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "boolean"
+                                },
+                                "example": false
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/check-email": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Vérifier si un email existe déjà",
+                "description": "Retourne true si l'email est disponible (200), false s'il est déjà pris (409).",
+                "operationId": "5940def61e4b44f28df2d279a08a6ca1",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "L'email à vérifier",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email disponible",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "boolean"
+                                },
+                                "example": true
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Email déjà utilisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "boolean"
+                                },
+                                "example": false
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/register": {

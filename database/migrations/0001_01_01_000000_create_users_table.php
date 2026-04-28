@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->string('lastName');
             $table->timestamp('email_verified_at')->nullable();
 
+            $table->string('pending_email')->nullable();
 
             $table->uuid('id')->primary();
             $table->string('public_name')->nullable();

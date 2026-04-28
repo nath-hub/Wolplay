@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name'); // free, premium, pro
             $table->decimal('price', 10, 2);
             $table->string('billing_cycle')->nullable(); // monthly, yearly
-            $table->text('features')->nullable();
+            $table->json('features')->nullable();
             $table->timestamps();
         });
     }

@@ -22,9 +22,9 @@ class LoginController extends Controller
     #[OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ['login', 'password'],
+            required: ['identifier', 'password'],
             properties: [
-                new OA\Property(property: 'login', type: 'string', description: 'Email ou Pseudo de l\'utilisateur', example: 'john_doe'),
+                new OA\Property(property: 'identifier', type: 'string', description: 'Email ou Pseudo de l\'utilisateur', example: 'john_doe'),
                 new OA\Property(property: 'password', type: 'string', format: 'password', example: 'votre_mot_de_passe')
             ]
         )
@@ -37,7 +37,10 @@ class LoginController extends Controller
                 new OA\Property(property: 'success', type: 'boolean', example: true),
                 new OA\Property(property: 'status', type: 'integer', example: 201),
                 new OA\Property(property: 'message', type: 'string', example: 'Votre compte a été connecté avec succès.'),
-                new OA\Property(property: 'data', type: 'object', additionalProperties: true)
+                new OA\Property(property: 'user', type: 'object', additionalProperties: true),
+                new OA\Property(property: 'accessToken', type: 'string', example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'),
+                new OA\Property(property: 'tokenType', type: 'string', example: 'Bearer'),
+                new OA\Property(property: 'expiresAt', type: 'string', format: 'date-time', example: '2024-07-01T12:00:00Z')
             ]
         )
     )]
@@ -55,17 +58,17 @@ class LoginController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'login' => ['required', 'string'], // email OR pseudo
+            'identifier' => ['required', 'string'], // email OR pseudo
             'password' => ['required', 'string'],
         ]);
 
         $this->ensureIsNotRateLimited($request);
 
         // Déterminer si c'est un email ou un pseudo
-        $field = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'pseudo';
+        $field = filter_var($request->identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'pseudo';
 
         $credentials = [
-            $field => $request->login,
+            $field => $request->identifier,
             'password' => $request->password,
         ];
 
@@ -114,9 +117,11 @@ class LoginController extends Controller
         return response()->json([
             'success' => true,
             'status' => 201,
+            "tokenType" => "Bearer",
             'message' => 'Connexion réussie.',
-            'token' => $token,
-            'data' => $user,
+            'accessToken' => $token,
+            'user' => $user,
+             "expiresAt" => now()->addMinutes(config('sanctum.expiration'))->toDateTimeString()
         ], 201);
     }
 

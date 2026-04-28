@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Models\HandleHistory;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -123,7 +124,7 @@ class ProfileController extends Controller
     }
 
     #[OA\Put(
-        path: '/api/profile/password',
+        path: '/api/auth/update-password',
         summary: 'Changer le mot de passe',
         description: 'Permet à l\'utilisateur connecté de modifier son mot de passe.',
         security: [['bearerAuth' => []]],
@@ -132,11 +133,10 @@ class ProfileController extends Controller
     #[OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ['current_password', 'password', 'password_confirmation'],
+            required: ['current_password', 'newPassword'],
             properties: [
                 new OA\Property(property: 'current_password', type: 'string', format: 'password', example: 'AncienMdp123!'),
-                new OA\Property(property: 'password', type: 'string', format: 'password', minLength: 8, example: 'NouveauMdp456!'),
-                new OA\Property(property: 'password_confirmation', type: 'string', format: 'password', example: 'NouveauMdp456!')
+                new OA\Property(property: 'newPassword', type: 'string', format: 'password', minLength: 8, example: 'NouveauMdp456!'),
             ]
         )
     )]
@@ -163,11 +163,11 @@ class ProfileController extends Controller
     {
         $request->validate([
             'current_password' => ['required', 'current_password'],
-            'password'         => ['required', 'confirmed', Password::defaults()],
+            'newPassword'         => ['required'],
         ]);
 
         Auth::user()->update([
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($request->newPassword),
         ]);
 
         return response()->json([
@@ -382,5 +382,90 @@ class ProfileController extends Controller
             'message' => 'User retrieved successfully.',
             'data' => $user,
         ], 200);
+    }
+
+
+    #[OA\Get(
+        path: '/api/auth/check-pseudo',
+        summary: 'Vérifier si un pseudo existe déjà',
+        description: 'Retourne true si le pseudo est disponible (200), false s\'il est déjà pris (409).',
+        tags: ['Auth'],
+        parameters: [
+            new OA\Parameter(
+                name: 'pseudo',
+                in: 'query',
+                description: 'Le pseudo à vérifier',
+                required: true,
+                schema: new OA\Schema(type: 'string')
+            )
+        ]
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Pseudo disponible',
+        content: new OA\JsonContent(type: 'boolean', example: true)
+    )]
+    #[OA\Response(
+        response: 409,
+        description: 'Pseudo déjà utilisé',
+        content: new OA\JsonContent(type: 'boolean', example: false)
+    )]
+    public function checkPseudo(Request $request)
+    {
+        $request->validate([
+            'pseudo' => ['required', 'string', 'max:255']
+        ]);
+
+        $user = User::where('pseudo', $request->pseudo)->first();
+
+        if (!$user) {
+            return response()->json(false, 409);
+        }
+
+        return response()->json(true, 200);
+    }
+
+
+
+
+
+    #[OA\Get(
+        path: '/api/auth/check-email',
+        summary: 'Vérifier si un email existe déjà',
+        description: 'Retourne true si l\'email est disponible (200), false s\'il est déjà pris (409).',
+        tags: ['Auth'],
+        parameters: [
+            new OA\Parameter(
+                name: 'email',
+                in: 'query',
+                description: 'L\'email à vérifier',
+                required: true,
+                schema: new OA\Schema(type: 'string')
+            )
+        ]
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Email disponible',
+        content: new OA\JsonContent(type: 'boolean', example: true)
+    )]
+    #[OA\Response(
+        response: 409,
+        description: 'Email déjà utilisé',
+        content: new OA\JsonContent(type: 'boolean', example: false)
+    )]
+    public function checkEmail(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email', 'max:255']
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(false, 409);
+        }
+
+        return response()->json(true, 200);
     }
 }
