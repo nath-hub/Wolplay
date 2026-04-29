@@ -269,3 +269,6 @@ class EmailVerificationController extends Controller
         ]);
     }
 }
+
+
+
