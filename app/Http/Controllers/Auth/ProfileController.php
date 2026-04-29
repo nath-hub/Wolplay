@@ -417,7 +417,7 @@ class ProfileController extends Controller
         ]);
 
         $user = User::where('pseudo', $request->pseudo)->exists();
-        return response()->json($user, 200);
+        return response()->json(!$user, 200);
     }
 
 
@@ -457,6 +457,6 @@ class ProfileController extends Controller
 
         $user = User::where('email', $request->email)->exists();
 
-        return response()->json($user, 200);
+        return response()->json(!$user, 200);
     }
 }
