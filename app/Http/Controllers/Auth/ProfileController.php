@@ -416,7 +416,8 @@ class ProfileController extends Controller
             'pseudo' => ['required', 'string', 'max:255']
         ]);
 
-        return User::where('pseudo', $request->pseudo)->exists();
+        $user = User::where('pseudo', $request->pseudo)->exists();
+        return response()->json($user, 200);
     }
 
 
@@ -454,8 +455,8 @@ class ProfileController extends Controller
             'email' => ['required', 'email', 'max:255']
         ]);
 
-       return User::where('email', $request->email)->exists();
+        $user = User::where('email', $request->email)->exists();
 
-
+        return response()->json($user, 200);
     }
 }
