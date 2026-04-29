@@ -63,8 +63,8 @@ class RegisterController extends Controller
                 'unique:users,pseudo',
                 'regex:/^[a-zA-Z0-9_.-]+$/',
             ],
-            'firstName' => ['string', 'max:255'],
-            'lastName' => ['string', 'max:255'],
+            'firstName' => ['nullable', 'string', 'max:255'],
+            'lastName' => ['nullable', 'string', 'max:255'],
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required'],
         ], [
@@ -75,8 +75,8 @@ class RegisterController extends Controller
             'pseudo'     => $request->pseudo,
             'email'      => $request->email,
             'password'   => Hash::make($request->password),
-            'firstName'  => $request->firstName,
-            'lastName'   => $request->lastName,
+            'firstName'  => $request->firstName ?? "",
+            'lastName'   => $request->lastName ?? "",
         ]);
 
         $stat = event(new Registered($user));
