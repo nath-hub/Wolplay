@@ -79,6 +79,65 @@
                 ]
             }
         },
+        "/api/auth/update-email": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Changer d'email",
+                "description": "Envoie un lien de vérification à la nouvelle adresse email. L'email en base ne change qu'après confirmation du lien.",
+                "operationId": "2808e4ea2e69bffcbc2ec20e403e167b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "newEmail",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "newEmail": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "nouveau@mail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "mot-de-passe-actuel"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Demande de changement d'email envoyée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "pending": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/login": {
             "post": {
                 "tags": [
@@ -663,14 +722,14 @@
                 ]
             }
         },
-        "/api/profile/password": {
+        "/api/auth/update-password": {
             "put": {
                 "tags": [
                     "Profile"
                 ],
                 "summary": "Changer le mot de passe",
                 "description": "Permet à l'utilisateur connecté de modifier son mot de passe.",
-                "operationId": "7c96fc6eec71e8ec463e68118a0ffb09",
+                "operationId": "2abf70e883b172d67df750be0d4c47e1",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -678,8 +737,7 @@
                             "schema": {
                                 "required": [
                                     "current_password",
-                                    "password",
-                                    "password_confirmation"
+                                    "newPassword"
                                 ],
                                 "properties": {
                                     "current_password": {
@@ -687,16 +745,11 @@
                                         "format": "password",
                                         "example": "AncienMdp123!"
                                     },
-                                    "password": {
+                                    "newPassword": {
                                         "type": "string",
                                         "format": "password",
                                         "example": "NouveauMdp456!",
                                         "minLength": 8
-                                    },
-                                    "password_confirmation": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "NouveauMdp456!"
                                     }
                                 },
                                 "type": "object"
@@ -971,11 +1024,6 @@
                                         "maxLength": 255
                                     },
                                     "password": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "StrongPassword123!"
-                                    },
-                                    "password_confirmation": {
                                         "type": "string",
                                         "format": "password",
                                         "example": "StrongPassword123!"

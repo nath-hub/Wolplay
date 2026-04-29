@@ -27,8 +27,7 @@ class RegisterController extends Controller
             properties: [
                 new OA\Property(property: 'pseudo', type: 'string', minLength: 3, maxLength: 30, example: 'john_doe'),
                 new OA\Property(property: 'email', type: 'string', format: 'email', maxLength: 255, example: 'john@example.com'),
-                new OA\Property(property: 'password', type: 'string', format: 'password', example: 'StrongPassword123!'),
-                new OA\Property(property: 'password_confirmation', type: 'string', format: 'password', example: 'StrongPassword123!')
+                new OA\Property(property: 'password', type: 'string', format: 'password', example: 'StrongPassword123!')
             ]
         )
     )]
@@ -67,7 +66,7 @@ class RegisterController extends Controller
             'firstName' => ['string', 'max:255'],
             'lastName' => ['string', 'max:255'],
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'password' => ['required'],
         ], [
             'pseudo.regex' => 'Le pseudo ne peut contenir que des lettres, chiffres, tirets, points et underscores.',
         ]);
