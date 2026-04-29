@@ -114,15 +114,13 @@ class LoginController extends Controller
          */
         $token = $user->createToken('auth_token')->plainTextToken;
 
+
         return response()->json([
-            'success' => true,
-            'status' => 201,
-            "tokenType" => "Bearer",
-            'message' => 'Connexion réussie.',
-            'accessToken' => $token,
             'user' => $user,
-             "expiresAt" => now()->addMinutes(config('sanctum.expiration'))->toDateTimeString()
-        ], 201);
+            'tokenType' => 'Bearer',
+            'accessToken' => $token,
+            'expiresAt' => now()->addMonth(6)->toISOString(), // IMPORTANT
+        ]);
     }
 
 
