@@ -124,14 +124,14 @@ class LoginController extends Controller
             "user" => [
                 "id" => $user->id,
                 "userInfos" => [
-                    "firstName" => $user->first_name,
-                    "lastName" => $user->last_name,
-                    "pseudo" => $user->pseudo,
-                    "email" => $user->email
+                    "firstName" => $user->first_name ?? "",
+                    "lastName" => $user->last_name ?? "",
+                    "pseudo" => $user->pseudo ?? "",
+                    "email" => $user->email ?? ""
                 ],
                 "subscription" => [
-                    "plan" => $user->plan,
-                    "status" => $user->status,
+                    "plan" => $user->plan ?? "",
+                    "status" => $user->status ?? "",
                     "renewsAt" => null
                 ],
                 "rating" => 0,
