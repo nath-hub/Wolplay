@@ -116,10 +116,29 @@ class LoginController extends Controller
 
 
         return response()->json([
-            'user' => $user,
+            // 'user' => $user,
             'tokenType' => 'Bearer',
             'accessToken' => $token,
             'expiresAt' => now()->addMonth(6)->toISOString(), // IMPORTANT
+
+            "user" => [
+                "id" => $user->id,
+                "userInfos" => [
+                    "firstName" => $user->first_name,
+                    "lastName" => $user->last_name,
+                    "pseudo" => $user->pseudo,
+                    "email" => $user->email
+                ],
+                "subscription" => [
+                    "plan" => $user->plan,
+                    "status" => $user->status,
+                    "renewsAt" => null
+                ],
+                "rating" => 0,
+                "follows" => [],
+                "videoHistory" => [],
+                "pinnedVideos" => []
+            ],
         ]);
     }
 
