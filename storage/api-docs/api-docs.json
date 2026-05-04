@@ -1282,6 +1282,541 @@
                     }
                 }
             }
+        },
+        "/api/videos": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Récupérer le flux de vidéos (Feed)",
+                "description": "Retourne une liste de vidéos filtrées par contexte (global, tutoriels, abonnements, etc.).",
+                "operationId": "98a9bbad1550b0356a0ad4dba29b1de5",
+                "parameters": [
+                    {
+                        "name": "context",
+                        "in": "query",
+                        "description": "Le contexte de filtrage du flux",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "global",
+                            "enum": [
+                                "global",
+                                "creator",
+                                "tutorials",
+                                "collections",
+                                "wolplays",
+                                "following"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "creator_id",
+                        "in": "query",
+                        "description": "ID du créateur (requis si context=creator)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Nombre de vidéos à récupérer",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 50,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "Décalage pour la pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 0,
+                            "minimum": 0
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste de vidéos récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Nous vous avons envoyé par courriel le lien de réinitialisation."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/next/videos": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Récupérer la vidéo suivante",
+                "description": "Retourne la vidéo publiée juste après la vidéo actuelle selon le contexte.",
+                "operationId": "24860a89f8eff2373479babe262e1f4a",
+                "parameters": [
+                    {
+                        "name": "current_video_id",
+                        "in": "query",
+                        "description": "ID de la vidéo en cours de lecture",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "context",
+                        "in": "query",
+                        "description": "Contexte de lecture (ex: creator)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "creator_id",
+                        "in": "query",
+                        "description": "ID du créateur (si context=creator)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Vidéo suivante trouvée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Vidéo suivante trouvée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Vidéo actuelle non trouvée"
+                    }
+                }
+            }
+        },
+        "/api/featured/videos": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Récupérer la vidéo à la une (aléatoire)",
+                "description": "Retourne une vidéo unique marquée \"wolplayPick\" de manière aléatoire.",
+                "operationId": "286e27198b8eb45d2ace02e90361ce58",
+                "responses": {
+                    "200": {
+                        "description": "Vidéo à la une récupérée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Vidéo à la une récupérée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/home/showcase": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Vitrines de la page d'accueil (Premium priority)",
+                "description": "Retourne 5 vidéos récentes. Priorise les créateurs ayant un plan Premium, puis complète avec les autres.",
+                "operationId": "c2dec8960666d1e07bee4fff7cb8b301",
+                "responses": {
+                    "200": {
+                        "description": "Liste des vidéos vitrines",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des vidéos vitrines récupérée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/home/collection": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Sélections éditoriales (Collections)",
+                "description": "Retourne les 6 dernières vidéos de la catégorie \"Collections\" marquées \"wolplayPick\".",
+                "operationId": "4f45427071d5d81962b538710e5952f0",
+                "responses": {
+                    "200": {
+                        "description": "Liste des collections éditoriales",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des collections éditoriales récupérée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/home/creators": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Créateurs à la une (Premium)",
+                "description": "Retourne 6 créateurs premium sélectionnés aléatoirement.",
+                "operationId": "0deb19704f056470388284f5702010b1",
+                "responses": {
+                    "200": {
+                        "description": "Liste des créateurs à la une",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des créateurs à la une récupérée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/wolplay/videos": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Vidéos Wolplay",
+                "description": "Retourne les vidéos de la catégorie \"Wolplays\" avec des filtres optionnels.",
+                "operationId": "75056ff0a18556116ef82a1f31eb1e5c",
+                "responses": {
+                    "200": {
+                        "description": "Liste des vidéos Wolplay",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des vidéos Wolplay récupérée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/wolplay/spotlight": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Vidéos Wolplay en vedette",
+                "description": "Retourne 4 vidéos Wolplay sélectionnées aléatoirement.",
+                "operationId": "784c88a543142cb4daa1300dcc94bfa6",
+                "responses": {
+                    "200": {
+                        "description": "Liste des vidéos Wolplay en vedette",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des vidéos Wolplay en vedette récupérée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tutorials/videos": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Vidéos Tutoriels",
+                "description": "Retourne les vidéos de la catégorie \"Tutoriels\" avec des filtres optionnels.",
+                "operationId": "b7b8a41b5fc54901c1e45255eabd473b",
+                "responses": {
+                    "200": {
+                        "description": "Liste des vidéos Tutoriels",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des vidéos Tutoriels récupérée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tutorials/spotlight": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Vidéos Tutoriels en vedette",
+                "description": "Retourne 4 vidéos Tutoriels sélectionnées aléatoirement.",
+                "operationId": "db1a246d282c8d137249894014e8e323",
+                "responses": {
+                    "200": {
+                        "description": "Liste des vidéos Tutoriels en vedette",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des vidéos Tutoriels en vedette récupérée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/collections/videos": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Vidéos Collections",
+                "description": "Retourne les vidéos de la catégorie \"Collections\" avec des filtres optionnels.",
+                "operationId": "d97b9a518c418ed27d5d6146fd8778c4",
+                "responses": {
+                    "200": {
+                        "description": "Liste des vidéos Collections",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des vidéos Collections récupérée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/collections/spotlights": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Vidéos Collections en vedette",
+                "description": "Retourne 6 vidéos Collections sélectionnées aléatoirement, 3 pour chaque plan (pro et premium).",
+                "operationId": "b80b16e5a172cbd8bade9e268dc0817e",
+                "responses": {
+                    "200": {
+                        "description": "Liste des vidéos Collections en vedette",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des vidéos Collections en vedette récupérée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/videos/{videoId}": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Détail d'une vidéo",
+                "description": "Retourne les détails d'une vidéo spécifique.",
+                "operationId": "788b9d251ebc95739df7be69c92e8412",
+                "responses": {
+                    "200": {
+                        "description": "Détails de la vidéo",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Détails de la vidéo récupérés"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/creators/{creatorId}/videos": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "Vidéos d'un créateur",
+                "description": "Retourne les vidéos d'un créateur spécifique avec des filtres optionnels.",
+                "operationId": "8e77e244987f70292b4686a355acea99",
+                "responses": {
+                    "200": {
+                        "description": "Liste des vidéos du créateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des vidéos du créateur récupérée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -1305,6 +1840,10 @@
         {
             "name": "Profile",
             "description": "Profile"
+        },
+        {
+            "name": "Videos",
+            "description": "Videos"
         }
     ]
 }

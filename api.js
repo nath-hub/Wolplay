@@ -1,0 +1,591 @@
+// vers le backend
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+export async function login(identifier, password) {
+    // Correction ici : Utilisation des backticks ` ` au lieu de guillemets classiques
+    const res = await fetch(`${API_BASE}/login`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json", // Bonne pratique pour préciser ce que tu attends
+        },
+        body: JSON.stringify({ identifier, password }),
+    });
+
+    if (!res.ok) {
+        // Il est souvent utile de récupérer le message d'erreur du backend
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+            errorData.message || "Identifiant ou mot de passe incorrect",
+        );
+    }
+
+    return res.json();
+}
+
+/**
+ * Données complètes de l'utilisateur connecté.
+ * @returns {Promise<Object>}
+ */
+export async function getUserMainData(userId) {
+    const res = await fetch(`${API_BASE}/users/${userId}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${getToken()}`,
+        },
+    });
+
+    if (!res.ok)
+        throw new Error("Impossible de récupérer les données utilisateur");
+
+    return res.json();
+}
+
+/**
+ * Vérification de disponibilité du pseudo (inscription).
+ * @returns {Promise<boolean>}
+ */
+export async function isPseudoAvailable(pseudo) {
+    const res = await fetch(
+        `${API_BASE}/auth/check-pseudo?pseudo=${encodeURIComponent(pseudo)}`,
+        {
+            method: "GET",
+            headers: { Accept: "application/json" },
+        },
+    );
+
+    // Selon ton code PHP :
+    // 200 renvoie true (dispo), 409 renvoie false (pris)
+    if (res.status === 409) return false;
+    if (res.ok) return res.json(); // retourne true
+
+    return false;
+}
+
+/**
+ * Vérification de disponibilité de l'email (inscription).
+ * @returns {Promise<boolean>}
+ */
+export async function isEmailAvailable(email) {
+    const res = await fetch(
+        `${API_BASE}/auth/check-email?email=${encodeURIComponent(email)}`,
+        {
+            method: "GET",
+            headers: { Accept: "application/json" },
+        },
+    );
+
+    // On suit la même logique que pour le pseudo
+    if (res.status === 409) return false;
+    if (res.ok) return res.json(); // retourne true
+
+    return false;
+}
+
+/**
+ * Inscription. Ne connecte PAS l'utilisateur.
+ * @returns {Promise<{ success: true }>}
+ */
+export async function register({
+    pseudo,
+    firstName,
+    lastName,
+    email,
+    password,
+}) {
+    const res = await fetch(`${API_BASE}/register`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
+        body: JSON.stringify({ pseudo, firstName, lastName, email, password }),
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        // Gestion des erreurs métier selon tes specs
+        if (res.status === 409) {
+            if (errorData.message?.includes("pseudo"))
+                throw new Error("Pseudo deja utilise");
+            if (errorData.message?.includes("email"))
+                throw new Error("Email deja utilise");
+        }
+        throw new Error(errorData.message || "Erreur lors de l'inscription");
+    }
+
+    return { success: true };
+}
+
+/**
+ * Changement de mot de passe.
+ * @returns {Promise<{ success: true }>}
+ */
+export async function updatePassword(userId, currentPassword, newPassword) {
+    const res = await fetch(`${API_BASE}/auth/update-password`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${getToken()}`,
+            // Assure-toi de passer le token ici si la route est protégée
+        },
+        body: JSON.stringify({ userId, currentPassword, newPassword }),
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        if (res.status === 401 || res.status === 403) {
+            throw new Error("invalid_current_password");
+        }
+        throw new Error(
+            errorData.message || "Erreur lors du changement de mot de passe",
+        );
+    }
+
+    return res.json(); // Doit retourner { success: true }
+}
+
+/**
+ * Changement d'email — envoie un lien de vérification.
+ * @returns {Promise<{ pending: true }>}
+ */
+export async function updateEmail(userId, newEmail, password) {
+    const res = await fetch(`${API_BASE}/auth/update-email`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
+        body: JSON.stringify({ userId, newEmail, password }),
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+
+        if (res.status === 409) throw new Error("email_already_used");
+        if (res.status === 401) throw new Error("invalid_password");
+
+        throw new Error(
+            errorData.message || "Erreur lors de la mise à jour de l'email",
+        );
+    }
+
+    return res.json(); // Doit retourner { pending: true }
+}
+
+/**
+ * Profil public par pseudo.
+ * @returns {Promise<Object|null>}
+ */
+export async function fetchPublicProfileByPseudo(pseudo) {
+    const res = await fetch(`${API_BASE}/public/profile/${pseudo}`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+        },
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+            errorData.message || "Erreur lors de la récupération du profil",
+        );
+    }
+
+    const data = await res.json();
+
+    // 👉 Si backend retourne null
+    return data || null;
+}
+
+/**
+ * Récupérer un profil complet par ID
+ * @returns {Promise<Object|null>}
+ */
+export async function fetchUserById(userId) {
+    const res = await fetch(`${API_BASE}/users/${userId}`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${getToken()}`,
+        },
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+            errorData.message ||
+                "Erreur lors de la récupération de l'utilisateur",
+        );
+    }
+
+    const data = await res.json();
+
+    // backend retourne null si inexistant
+    return data || null;
+}
+
+function getToken() {
+    try {
+        const stored = localStorage.getItem("wolplay.currentUser");
+        return JSON.parse(stored)?.authSession?.accessToken ?? null;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Feed vidéos
+ * @returns {Promise<Array>}
+ */
+export async function fetchVideosFeed({
+    context = "global",
+    creatorId = null,
+    limit = 20,
+    offset = 0,
+} = {}) {
+    const params = new URLSearchParams();
+
+    if (context) params.append("context", context);
+    if (creatorId) params.append("creator_id", creatorId);
+    if (limit) params.append("limit", limit);
+    if (offset) params.append("offset", offset);
+
+    const res = await fetch(`${API_BASE}/videos?${params.toString()}`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+        },
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+            errorData.message || "Erreur lors du chargement du feed",
+        );
+    }
+
+    return await res.json();
+}
+
+/**
+ * Récupérer la prochaine vidéo
+ * @returns {Promise<Object|null>}
+ */
+export async function fetchNextVideo(
+    currentVideoId,
+    { context = "global", creatorId = null } = {},
+) {
+    const params = new URLSearchParams();
+
+    if (context) params.append("context", context);
+    if (creatorId) params.append("creator_id", creatorId);
+
+    const res = await fetch(
+        `${API_BASE}/next/videos/${currentVideoId}?${params.toString()}`,
+        {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+            },
+        },
+    );
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+
+        if (res.status === 404) {
+            throw new Error("video_not_found");
+        }
+
+        throw new Error(
+            errorData.message ||
+                "Erreur lors du chargement de la prochaine vidéo",
+        );
+    }
+
+    const data = await res.json();
+
+    return data || null;
+}
+
+/**
+ * Vidéo mise en avant (featured)
+ * @returns {Promise<Object|null>}
+ */
+export async function fetchFeaturedVideo() {
+    const res = await fetch(`${API_BASE}/featured/videos`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+        },
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+            errorData.message ||
+                "Erreur lors du chargement de la vidéo mise en avant",
+        );
+    }
+
+    const data = await res.json();
+    return data || null;
+}
+
+/**
+ * Vidéos du showcase homepage
+ * @returns {Promise<Array>}
+ */
+export async function fetchHomeShowcase() {
+    const res = await fetch(`${API_BASE}/home/showcase`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+        },
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+            errorData.message || "Erreur lors du chargement du showcase",
+        );
+    }
+
+    return await res.json(); // toujours un tableau
+}
+
+/**
+ * Vidéos collection homepage
+ * @returns {Promise<Array>}
+ */
+export async function fetchHomeCollection() {
+    const res = await fetch(`${API_BASE}/home/collection`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+        },
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+            errorData.message || "Erreur lors du chargement des collections",
+        );
+    }
+
+    return await res.json();
+}
+
+/**
+ * Créateurs homepage
+ * @returns {Promise<Array>}
+ */
+export async function fetchHomeCreators() {
+    const res = await fetch(`${API_BASE}/home/creators`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+        },
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+            errorData.message || "Erreur lors du chargement des créateurs",
+        );
+    }
+
+    return await res.json();
+}
+
+/**
+ * Wolplay vidéos
+ * @returns {Promise<Array>}
+ */
+export async function fetchWolplayVideos({
+    discipline = null,
+    format = null,
+    limit = 20,
+    offset = 0,
+} = {}) {
+    const params = new URLSearchParams();
+
+    if (discipline) params.append("discipline", discipline);
+    if (format) params.append("format", format);
+    if (limit) params.append("limit", limit);
+    if (offset) params.append("offset", offset);
+
+    const res = await fetch(
+        `${API_BASE}/wolplay/creators?${params.toString()}`,
+        {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+            },
+        },
+    );
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+            errorData.message || "Erreur chargement Wolplay vidéos",
+        );
+    }
+
+    return await res.json();
+}
+
+/**
+ * Wolplay spotlight
+ * @returns {Promise<Array>}
+ */
+export async function fetchWolplaySpotlight() {
+    const res = await fetch(`${API_BASE}/wolplay/spotlight`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+        },
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Erreur chargement spotlight");
+    }
+
+    return await res.json();
+}
+
+/**
+ * Tutoriels
+ */
+export async function fetchTutorialVideos({
+    discipline = null,
+    limit = 20,
+    offset = 0,
+} = {}) {
+    const params = new URLSearchParams();
+
+    if (discipline) params.append("discipline", discipline);
+    if (limit) params.append("limit", limit);
+    if (offset) params.append("offset", offset);
+
+    const res = await fetch(`${API_BASE}/videos/tutorial?${params}`, {
+        headers: { Accept: "application/json" },
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Erreur chargement tutoriels");
+    }
+
+    return await res.json();
+}
+
+/**
+ * Tutoriels
+ */
+export async function fetchTutorialVideos({
+    discipline = null,
+    limit = 20,
+    offset = 0,
+} = {}) {
+    const params = new URLSearchParams();
+
+    if (discipline) params.append("discipline", discipline);
+    if (limit) params.append("limit", limit);
+    if (offset) params.append("offset", offset);
+
+    const res = await fetch(`${API_BASE}/videos/tutorial?${params}`, {
+        headers: { Accept: "application/json" },
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Erreur chargement tutoriels");
+    }
+
+    return await res.json();
+}
+
+/**
+ * Spotlight tutoriels
+ */
+export async function fetchTutorialSpotlight() {
+    const res = await fetch(`${API_BASE}/videos/tutorial/spotlight`, {
+        headers: { Accept: "application/json" },
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Erreur spotlight tutoriels");
+    }
+
+    return await res.json();
+}
+
+/**
+ * Spotlights collections (pro + premium)
+ */
+export async function fetchCollectionSpotlights() {
+    const res = await fetch(`${API_BASE}/videos/collection/spotlights`, {
+        headers: { Accept: "application/json" },
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Erreur spotlights collections");
+    }
+
+    return await res.json();
+}
+
+/**
+ * Détail d'une vidéo
+ */
+export async function fetchVideoById(videoId) {
+    const res = await fetch(`${API_BASE}/videos/${videoId}`, {
+        headers: { Accept: "application/json" },
+    });
+
+    if (!res.ok) {
+        if (res.status === 404) throw new Error("video_not_found");
+
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Erreur chargement vidéo");
+    }
+
+    return await res.json();
+}
+
+/**
+ * Vidéos d’un créateur
+ */
+export async function fetchCreatorVideos(
+    creatorId,
+    { category = null, limit = 20, offset = 0 } = {},
+) {
+    const params = new URLSearchParams();
+
+    if (category) params.append("category", category);
+    if (limit) params.append("limit", limit);
+    if (offset) params.append("offset", offset);
+
+    const res = await fetch(
+        `${API_BASE}/videos/creator/${creatorId}?${params}`,
+        {
+            headers: { Accept: "application/json" },
+        },
+    );
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Erreur vidéos créateur");
+    }
+
+    return await res.json();
+}

@@ -15,7 +15,7 @@ class SubscriptionPlanController extends Controller
             'success' => true,
             'data' => SubscriptionPlan::latest()->get()
         ]);
-    }  
+    }
     // 📌 STORE
     public function store(Request $request)
     {
@@ -98,6 +98,53 @@ class SubscriptionPlanController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Plan supprimé'
+        ]);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * @return \Illuminate\Http\JsonResponse { success: boolean, plan: "premium" }
+     */
+    public function upgradeToPremium(Request $request)
+    {
+        $user = $request->user();
+
+        $user->update(['plan' => 'premium']);
+
+        // TODO: intégrer passerelle de paiement (Stripe, etc.)
+
+        return response()->json([
+            'success' => true,
+            'plan'    => 'premium',
+        ]);
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse { success: boolean, plan: "free" }
+     */
+    public function cancelPremium(Request $request)
+    {
+        $user = $request->user();
+
+        $user->update(['plan' => 'free']);
+
+        // TODO: résilier l'abonnement côté passerelle de paiement
+
+        return response()->json([
+            'success' => true,
+            'plan'    => 'free',
         ]);
     }
 }

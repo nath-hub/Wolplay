@@ -5,7 +5,9 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ProfileController;
+use App\Http\Controllers\FollowsController;
 use App\Http\Controllers\SubscriptionPlanController;
+use App\Http\Controllers\VideosController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -61,3 +63,32 @@ Route::post('/subscription-plans', [SubscriptionPlanController::class, 'store'])
 Route::get('/subscription-plans/{id}', [SubscriptionPlanController::class, 'show']);
 Route::put('/subscription-plans/{id}', [SubscriptionPlanController::class, 'update']);
 Route::delete('/subscription-plans/{id}', [SubscriptionPlanController::class, 'destroy']);
+
+
+Route::middleware('auth:sanctum')->group(function () {
+
+    // Follow & Recommandations
+    Route::post('/creators/{creatorId}/follow',   [FollowsController::class, 'follow']);
+    Route::delete('/creators/{creatorId}/follow', [FollowsController::class, 'unfollow']);
+    Route::get('/creators/recommended',           [FollowsController::class, 'recommended']);
+
+    // Abonnements
+    Route::post('/subscription/upgrade', [SubscriptionPlanController::class, 'upgradeToPremium']);
+    Route::post('/subscription/cancel',  [SubscriptionPlanController::class, 'cancelPremium']);
+
+    //route pour les videos
+    Route::get('/videos', [VideosController::class, 'feed']);
+    Route::get('/next/videos', [VideosController::class, 'next']);
+    Route::get('/featured/videos', [VideosController::class, 'featured']);
+    Route::get('/home/showcase', [VideosController::class, 'homeShowcase']);
+    Route::get('/home/collection', [VideosController::class, 'homeCollection']);
+    Route::get('/home/creators', [VideosController::class, 'homeCreators']);
+    Route::get('/wolplay/creators', [VideosController::class, 'wolplayVideos']);
+    Route::get('/wolplay/spotlight', [VideosController::class, 'wolplaySpotlight']);
+    Route::get('/videos/{videoId}', [VideosController::class, 'show']);
+    Route::get('/videos/tutorial', [VideosController::class, 'tutorialVideos']);
+    Route::get('/videos/tutorial/spotlight', [VideosController::class, 'tutorialSpotlight']);
+    Route::get('/videos/collection', [VideosController::class, 'collectionVideos']);
+    Route::get('/videos/collection/spotlights', [VideosController::class, 'collectionSpotlights']);
+    Route::get('/videos/creator/{creatorId}', [VideosController::class, 'creatorVideos']);
+});
