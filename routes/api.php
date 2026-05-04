@@ -78,17 +78,20 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //route pour les videos
     Route::get('/videos', [VideosController::class, 'feed']);
-    Route::get('/next/videos', [VideosController::class, 'next']);
-    Route::get('/featured/videos', [VideosController::class, 'featured']);
-    Route::get('/home/showcase', [VideosController::class, 'homeShowcase']);
-    Route::get('/home/collection', [VideosController::class, 'homeCollection']);
-    Route::get('/home/creators', [VideosController::class, 'homeCreators']);
-    Route::get('/wolplay/creators', [VideosController::class, 'wolplayVideos']);
-    Route::get('/wolplay/spotlight', [VideosController::class, 'wolplaySpotlight']);
-    Route::get('/videos/{videoId}', [VideosController::class, 'show']);
-    Route::get('/videos/tutorial', [VideosController::class, 'tutorialVideos']);
-    Route::get('/videos/tutorial/spotlight', [VideosController::class, 'tutorialSpotlight']);
-    Route::get('/videos/collection', [VideosController::class, 'collectionVideos']);
-    Route::get('/videos/collection/spotlights', [VideosController::class, 'collectionSpotlights']);
-    Route::get('/videos/creator/{creatorId}', [VideosController::class, 'creatorVideos']);
 });
+
+
+Route::get('/next/videos', [VideosController::class, 'next']);
+Route::get('/featured/videos', [VideosController::class, 'featured']);
+Route::get('/home/showcase', [VideosController::class, 'homeShowcase']);
+Route::get('/home/creators', [VideosController::class, 'homeCreators']);
+
+Route::get('/wolplay/spotlight', [VideosController::class, 'wolplaySpotlight']);
+Route::get('/videos/{videoId}', [VideosController::class, 'show']);
+Route::get('/wolplay/creators', [VideosController::class, 'wolplayVideos']);
+Route::get('/videos/tutorial', [VideosController::class, 'tutorialVideos']);
+Route::get('/videos/tutorial/spotlight', [VideosController::class, 'tutorialSpotlight']);
+Route::get('/videos/collection', [VideosController::class, 'collectionVideos']);
+Route::get('/videos/collection/spotlights', [VideosController::class, 'collectionSpotlights']);
+Route::get('/videos/creator/{creatorId}', [VideosController::class, 'creatorVideos']);
+Route::get('/home/collection', [VideosController::class, 'homeCollection']);
