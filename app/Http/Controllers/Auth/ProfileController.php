@@ -123,7 +123,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    #[OA\Put(
+    #[OA\Post(
         path: '/api/auth/update-password',
         summary: 'Changer le mot de passe',
         description: 'Permet à l\'utilisateur connecté de modifier son mot de passe.',
@@ -133,9 +133,9 @@ class ProfileController extends Controller
     #[OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ['current_password', 'newPassword'],
+            required: ['currentPassword', 'newPassword'],
             properties: [
-                new OA\Property(property: 'current_password', type: 'string', format: 'password', example: 'AncienMdp123!'),
+                new OA\Property(property: 'currentPassword', type: 'string', format: 'password', example: 'AncienMdp123!'),
                 new OA\Property(property: 'newPassword', type: 'string', format: 'password', minLength: 8, example: 'NouveauMdp456!'),
             ]
         )
@@ -162,7 +162,7 @@ class ProfileController extends Controller
     public function updatePassword(Request $request)
     {
         $request->validate([
-            'current_password' => ['required', 'current_password'],
+            'currentPassword' => ['required', 'current_password'],
             'newPassword'         => ['required'],
         ]);
 

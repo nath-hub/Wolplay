@@ -924,24 +924,24 @@
             }
         },
         "/api/auth/update-password": {
-            "put": {
+            "post": {
                 "tags": [
                     "Profile"
                 ],
                 "summary": "Changer le mot de passe",
                 "description": "Permet à l'utilisateur connecté de modifier son mot de passe.",
-                "operationId": "2abf70e883b172d67df750be0d4c47e1",
+                "operationId": "26a1753357c11f638e2b23c3b9656209",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "current_password",
+                                    "currentPassword",
                                     "newPassword"
                                 ],
                                 "properties": {
-                                    "current_password": {
+                                    "currentPassword": {
                                         "type": "string",
                                         "format": "password",
                                         "example": "AncienMdp123!"
