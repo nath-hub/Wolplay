@@ -50,7 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('verified')->group(function () {
         Route::get('/users', [ProfileController::class, 'getUserWithToken'])->name('profile.show');
         Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::put('/auth/update-password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+        Route::post('/auth/update-password', [ProfileController::class, 'updatePassword'])->name('profile.password');
         Route::put('/profile/pseudo', [ProfileController::class, 'updatePseudo'])->name('profile.pseudo');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     });
