@@ -1626,14 +1626,14 @@
                 }
             }
         },
-        "/api/tutorials/videos": {
+        "/api/videos/tutorial": {
             "get": {
                 "tags": [
                     "Videos"
                 ],
                 "summary": "Vidéos Tutoriels",
                 "description": "Retourne les vidéos de la catégorie \"Tutoriels\" avec des filtres optionnels.",
-                "operationId": "b7b8a41b5fc54901c1e45255eabd473b",
+                "operationId": "1ca0964ba3c5af4cc36850b76c448c92",
                 "responses": {
                     "200": {
                         "description": "Liste des vidéos Tutoriels",

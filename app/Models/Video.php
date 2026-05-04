@@ -22,7 +22,7 @@ class Video extends Model
     protected $guarded = ['id'];
 
 
-     protected $casts = [
+    protected $casts = [
         'author_certified' => 'boolean',
         'is_featured'      => 'boolean',
         'is_wolplay_pick'  => 'boolean',
@@ -61,16 +61,16 @@ class Video extends Model
     public function featuredBy(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'featured_videos')
-                    ->withPivot('slot')
-                    ->orderByPivot('slot');
+            ->withPivot('slot')
+            ->orderByPivot('slot');
     }
 
     /** Collections contenant cette vidéo */
     public function collections(): BelongsToMany
     {
         return $this->belongsToMany(Collection::class, 'collection_videos')
-                    ->withPivot('sort_order')
-                    ->orderByPivot('sort_order');
+            ->withPivot('sort_order')
+            ->orderByPivot('sort_order');
     }
 
     /** Post de type "video" associé à cette vidéo */
@@ -83,7 +83,7 @@ class Video extends Model
     public function reports(): HasMany
     {
         return $this->hasMany(Report::class, 'target_id')
-                    ->where('target_type', 'video');
+            ->where('target_type', 'video');
     }
 
     // ── Scopes ─────────────────────────────────────────────────────────────────
@@ -98,9 +98,15 @@ class Video extends Model
         return $query->where('is_wolplay_pick', true);
     }
 
-    public function scopeByCategory($query, string $categoryName)
+    public function scopeByCategory($query, ?string $categoryName = null)
     {
-        return $query->whereHas('category', fn ($q) => $q->where('name', $categoryName));
+        if (!$categoryName) {
+            return $query; // 👉 pas de filtre si vide
+        }
+
+        return $query->whereHas('category', function ($q) use ($categoryName) {
+            $q->where('name', $categoryName);
+        });
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────────

@@ -393,7 +393,7 @@ class VideosController extends Controller
     // ── fetchTutorialVideos ───────────────────────────────────────────────────
 
     #[OA\Get(
-        path: '/api/tutorials/videos',
+        path: '/api/videos/tutorial',
         summary: 'Vidéos Tutoriels',
         description: 'Retourne les vidéos de la catégorie "Tutoriels" avec des filtres optionnels.',
         tags: ['Videos'],
@@ -410,31 +410,36 @@ class VideosController extends Controller
     )]
     public function tutorialVideos(Request $request): JsonResponse
     {
-        $request->validate([
-            'discipline' => 'sometimes|string',
-            'limit'      => 'sometimes|integer|min:1|max:50',
-            'offset'     => 'sometimes|integer|min:0',
+        $validated = $request->validate([
+            'discipline' => ['sometimes', 'string'],
+            'limit'      => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'offset'     => ['sometimes', 'integer', 'min:0'],
         ]);
 
-        $query = Video::with(['creator', 'disciplines', 'tags'])
+        $limit  = $validated['limit'] ?? 20;
+        $offset = $validated['offset'] ?? 0;
+
+        $query = Video::query()
+            ->with(['creator', 'disciplines', 'tags'])
             ->published()
             ->byCategory('Tutorials');
 
-        if ($request->filled('discipline')) {
-            $query->whereHas(
-                'disciplines',
-                fn($q) =>
-                $q->where('slug', $request->input('discipline'))
-            );
+        // 🔎 Filtre discipline
+        if (!empty($validated['discipline'])) {
+            $query->whereHas('disciplines', function ($q) use ($validated) {
+                $q->where('slug', $validated['discipline']);
+            });
         }
 
         $videos = $query
             ->latest('published_at')
-            ->skip($request->integer('offset', 0))
-            ->take($request->integer('limit', 20))
+            ->skip($offset)
+            ->take($limit)
             ->get();
 
-        return response()->json($videos);
+        return response()->json(
+            $videos
+        );
     }
 
     // ── fetchTutorialSpotlight ────────────────────────────────────────────────
