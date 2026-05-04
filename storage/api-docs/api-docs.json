@@ -138,6 +138,77 @@
                 ]
             }
         },
+        "/api/public/profile/{pseudo}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Récupérer les informations publiques d'un profil",
+                "description": "Retourne les données d'un utilisateur via son pseudo. Retourne null si aucun utilisateur n'est trouvé.",
+                "operationId": "db806ab9e438e35554204fd5a5ae3589",
+                "parameters": [
+                    {
+                        "name": "pseudo",
+                        "in": "path",
+                        "description": "Le pseudo de l'utilisateur à rechercher",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Utilisateur trouvé ou null",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "pseudo": {
+                                                    "type": "string",
+                                                    "example": "PseudoCreator"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Jean Dupont"
+                                                },
+                                                "avatar": {
+                                                    "type": "string",
+                                                    "example": "https://cdn.com/avatar.jpg",
+                                                    "nullable": true
+                                                },
+                                                "bio": {
+                                                    "type": "string",
+                                                    "example": "Passionné de figurines miniatures.",
+                                                    "nullable": true
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2026-05-04T10:00:00Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/login": {
             "post": {
                 "tags": [
@@ -1096,6 +1167,10 @@
         {
             "name": "Auth",
             "description": "Auth"
+        },
+        {
+            "name": "Users",
+            "description": "Users"
         },
         {
             "name": "Profile",

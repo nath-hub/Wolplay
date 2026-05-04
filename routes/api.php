@@ -26,6 +26,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'passwordReset'])->name('password.reset');
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'notice'])->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+
+    Route::get('/public/profile/{pseudo}', [EmailVerificationController::class, 'getByPseudo']);
 });
 // ── Authenticated routes ───────────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
@@ -42,7 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('confirm.email.change')
         ->middleware('signed');
 
-        Route::get('/public/profile/{pseudo}', [EmailVerificationController::class, 'getByPseudo']);
+
 
     // Profil (requiert email vérifié)
     Route::middleware('verified')->group(function () {

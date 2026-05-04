@@ -250,7 +250,41 @@ class EmailVerificationController extends Controller
     }
 
 
-
+    #[OA\Get(
+        path: '/api/public/profile/{pseudo}',
+        summary: 'Récupérer les informations publiques d\'un profil',
+        description: 'Retourne les données d\'un utilisateur via son pseudo. Retourne null si aucun utilisateur n\'est trouvé.',
+        tags: ['Users'],
+        parameters: [
+            new OA\Parameter(
+                name: 'pseudo',
+                in: 'path',
+                description: 'Le pseudo de l\'utilisateur à rechercher',
+                required: true,
+                schema: new OA\Schema(type: 'string')
+            )
+        ]
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Utilisateur trouvé ou null',
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    properties: [
+                        new OA\Property(property: 'id', type: 'integer', example: 1),
+                        new OA\Property(property: 'pseudo', type: 'string', example: 'PseudoCreator'),
+                        new OA\Property(property: 'name', type: 'string', example: 'Jean Dupont'),
+                        new OA\Property(property: 'avatar', type: 'string', nullable: true, example: 'https://cdn.com/avatar.jpg'),
+                        new OA\Property(property: 'bio', type: 'string', nullable: true, example: 'Passionné de figurines miniatures.'),
+                        new OA\Property(property: 'created_at', type: 'string', format: 'date-time', example: '2026-05-04T10:00:00Z')
+                    ],
+                    type: 'object'
+                ),
+                new OA\Schema(type: 'string', nullable: true, example: null)
+            ]
+        )
+    )]
     public function getByPseudo($pseudo)
     {
         $user = User::where('pseudo', $pseudo)->first();
@@ -269,6 +303,3 @@ class EmailVerificationController extends Controller
         ]);
     }
 }
-
-
-
