@@ -378,7 +378,7 @@ class EmailVerificationController extends Controller
     )]
     public function getById($id)
     {
-        $user = User::with(['subscriptions', 'follows', 'videoHistory'])->find($id);
+        $user = User::with(['subscriptions'])->find($id); //ajouter les relations , 'follows', 'videoHistory'
 
         if (!$user) {
             return response()->json(null, 200);
