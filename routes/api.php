@@ -44,7 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('confirm.email.change')
         ->middleware('signed');
 
-
+    Route::get('/users/{id}', [EmailVerificationController::class, 'getById'])->name('profile.show-by-id');
 
     // Profil (requiert email vérifié)
     Route::middleware('verified')->group(function () {

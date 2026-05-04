@@ -302,4 +302,108 @@ class EmailVerificationController extends Controller
             'created_at' => $user->created_at,
         ]);
     }
+
+    #[OA\Get(
+        path: '/api/users/{id}',
+        summary: 'Récupérer les données complètes de l\'utilisateur (MainData)',
+        description: 'Retourne une structure compatible avec userMainDataSchema pour l\'initialisation du front.',
+        tags: ['Users'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                description: 'ID de l\'utilisateur',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ]
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Données utilisateur ou null',
+        content: new OA\JsonContent(
+            oneOf: [
+                new OA\Schema(
+                    properties: [
+                        new OA\Property(property: 'id', type: 'integer', example: 1),
+                        new OA\Property(
+                            property: 'userInfos',
+                            type: 'object',
+                            properties: [
+                                new OA\Property(property: 'pseudo', type: 'string', example: 'PseudoCreator'),
+                                new OA\Property(property: 'name', type: 'string', example: 'Jean Dupont'),
+                                new OA\Property(property: 'avatar', type: 'string', nullable: true, example: 'https://cdn.com/avatar.jpg'),
+                                new OA\Property(property: 'bio', type: 'string', nullable: true, example: 'Passionné de figurines miniatures.')
+                            ]
+                        ),
+                        new OA\Property(
+                            property: 'subscription',
+                            type: 'object',
+                            properties: [
+                                new OA\Property(property: 'plan', type: 'string', example: 'free'),
+                                new OA\Property(property: 'status', type: 'string', example: 'active')
+                            ]
+                        ),
+                        new OA\Property(property: 'rating', type: 'number', format: 'float', example: 4.5),
+                        new OA\Property(
+                            property: 'follows',
+                            type: 'array',
+                            items: new OA\Items(type: 'integer'),
+                            example: [12, 45, 67]
+                        ),
+                        new OA\Property(
+                            property: 'videoHistory',
+                            type: 'array',
+                            items: new OA\Items(type: 'object'),
+                            example: []
+                        ),
+                        new OA\Property(
+                            property: 'pinnedVideos',
+                            type: 'array',
+                            items: new OA\Items(type: 'string'),
+                            example: ["vid_123", "vid_456"]
+                        ),
+                        new OA\Property(
+                            property: 'role',
+                            type: 'string',
+                            enum: ['member', 'creator', 'moderator', 'manufacturer', 'admin'],
+                            example: 'creator'
+                        )
+                    ],
+                    type: 'object'
+                ),
+                new OA\Schema(type: 'string', nullable: true, example: null)
+            ]
+        )
+    )]
+    public function getById($id)
+    {
+        $user = User::with(['subscription', 'follows', 'videoHistory'])->find($id);
+
+        if (!$user) {
+            return response()->json(null, 200);
+        }
+
+        return response()->json([
+            'id' => $user->id,
+            'userInfos' => [
+                'pseudo' => $user->pseudo,
+                'name'   => $user->name,
+                'avatar' => $user->avatar,
+                'bio'    => $user->bio,
+            ],
+            // Correspond au userSubscriptionSchema
+            'subscription' => $user->subscription ?? [
+                'plan' => 'free',
+                'status' => 'active'
+            ],
+            'rating' => (float) ($user->rating ?? 0),
+            // IDs des personnes suivies
+            'follows' => $user->follows->pluck('id')->toArray(),
+            // Historique formaté selon userVideoHistoryEntrySchema
+            'videoHistory' => $user->videoHistory ?? [],
+            'pinnedVideos' => $user->pinned_videos ?? [],
+            'role' => $user->role ?? 'member', // "member", "creator", etc.
+        ]);
+    }
 }
