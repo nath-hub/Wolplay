@@ -314,7 +314,7 @@ class EmailVerificationController extends Controller
                 in: 'path',
                 description: 'ID de l\'utilisateur',
                 required: true,
-                schema: new OA\Schema(type: 'integer')
+                schema: new OA\Schema(type: 'string', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000')
             )
         ]
     )]
@@ -399,7 +399,7 @@ class EmailVerificationController extends Controller
             ],
             'rating' => (float) ($user->rating ?? 0),
             // IDs des personnes suivies
-            'follows' => $user->follows->pluck('id')->toArray(),
+            'follows' => $user->follows ? $user->follows->pluck('id')->toArray() : [],
             // Historique formaté selon userVideoHistoryEntrySchema
             'videoHistory' => $user->videoHistory ?? [],
             'pinnedVideos' => $user->pinned_videos ?? [],
