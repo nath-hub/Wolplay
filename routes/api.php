@@ -28,6 +28,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'notice'])->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
 
     Route::get('/public/profile/{pseudo}', [EmailVerificationController::class, 'getByPseudo']);
+
+    Route::get('/users/{id}', [EmailVerificationController::class, 'getById'])->name('profile.show-by-id');
 });
 // ── Authenticated routes ───────────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
@@ -43,8 +45,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/confirm-email-change', [EmailVerificationController::class, 'confirmEmailChange'])
         ->name('confirm.email.change')
         ->middleware('signed');
-
-    Route::get('/users/{id}', [EmailVerificationController::class, 'getById'])->name('profile.show-by-id');
 
     // Profil (requiert email vérifié)
     Route::middleware('verified')->group(function () {
