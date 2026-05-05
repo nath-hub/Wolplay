@@ -34,7 +34,7 @@ export async function getUserMainData(userId) {
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: `Bearer ${getToken()}`,
+            "Authorization" :`Bearer ${getToken()}`,
         },
     });
 
@@ -130,7 +130,7 @@ export async function updatePassword(userId, currentPassword, newPassword) {
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: `Bearer ${getToken()}`,
+            "Authorization" :`Bearer ${getToken()}`,
             // Assure-toi de passer le token ici si la route est protégée
         },
         body: JSON.stringify({ userId, currentPassword, newPassword }),
@@ -211,7 +211,7 @@ export async function fetchUserById(userId) {
         method: "GET",
         headers: {
             Accept: "application/json",
-            Authorization: `Bearer ${getToken()}`,
+            "Authorization" :`Bearer ${getToken()}`,
         },
     });
 
@@ -588,4 +588,511 @@ export async function fetchCreatorVideos(
     }
 
     return await res.json();
+}
+
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+/**
+ * Suivre un créateur
+ * @returns {Promise<{ following: true }>}
+ */
+export async function followCreator(creatorId, token) {
+    const res = await fetch(`${API_BASE}/creators/${creatorId}/follow`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "Authorization" :`Bearer ${token}`,
+        },
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Erreur follow creator");
+    }
+
+    return await res.json(); // { following: true }
+}
+
+
+/**
+ * Se désabonner d’un créateur
+ * @returns {Promise<{ following: false }>}
+ */
+export async function unfollowCreator(creatorId, token) {
+  const res = await fetch(`${API_BASE}/creators/${creatorId}/follow`, {
+    method: "DELETE",
+    headers: {
+      "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`,
+    },
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur unfollow creator");
+  }
+
+  return await res.json(); // { following: false }
+}
+
+
+/**
+ * Créateurs recommandés
+ * @returns {Promise<CreatorCard[]>}
+ */
+export async function fetchRecommendedCreators({
+  limit = 6,
+  excludeIds = [],
+  token,
+} = {}) {
+
+  const params = new URLSearchParams();
+
+  if (limit) params.append("limit", limit);
+
+  if (excludeIds.length) {
+    excludeIds.forEach(id => params.append("excludeIds[]", id));
+  }
+
+  const res = await fetch(`${API_BASE}/creators/recommended?${params}`, {
+    headers: {
+      "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`,
+    },
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur creators recommandés");
+  }
+
+  return await res.json();
+}
+
+
+/**
+ * Vérifie si l'utilisateur suit un créateur
+ * @returns {Promise<{ following: boolean }>}
+ */
+export async function fetchFollowStatus(creatorId, token) {
+  const res = await fetch(`${API_BASE}/creators/${creatorId}/follow`, {
+    headers: {
+      "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`,
+    },
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur fetch follow status");
+  }
+
+  return await res.json(); // { following: true | false }
+}
+
+
+/**
+ * Liste des créateurs suivis par un user
+ * @returns {Promise<CreatorCard[]>}
+ */
+export async function fetchFollowing(userId, token) {
+  const res = await fetch(`${API_BASE}/users/${userId}/following`, {
+    headers: {
+      "Accept": "application/json",
+      "Authorization": `Bearer ${getToken()}`, // optionnel si public
+    },
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur fetch following");
+  }
+
+  return await res.json();
+}
+
+
+/**
+ * Liste des followers d’un user
+ * @returns {Promise<CreatorCard[]>}
+ */
+export async function fetchFollowers(userId, token) {
+  const res = await fetch(`${API_BASE}/users/${userId}/followers`, {
+    headers: {
+      "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`, // optionnel
+    },
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur fetch followers");
+  }
+
+  return await res.json();
+}
+
+ 
+
+
+/**
+ * Vidéos du créateur (pinned)
+ */
+export async function fetchPinnedVideos(userId, token) {
+  const res = await fetch(`${API_BASE}/users/${userId}/videos`, {
+    headers: {
+      "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`,
+    },
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur fetch pinned videos");
+  }
+
+  return await res.json();
+}
+
+
+/**
+ * Ajouter une vidéo
+ */
+export async function addPinnedVideo(userId, data, token) {
+  const res = await fetch(`${API_BASE}/users/${userId}/videos`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur ajout vidéo");
+  }
+
+  return await res.json();
+}
+
+
+/**
+ * Supprimer une vidéo
+ */
+export async function deletePinnedVideo(userId, videoId, token) {
+  const res = await fetch(`${API_BASE}/users/${userId}/videos/${videoId}`, {
+    method: "DELETE",
+    headers: {
+      "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`,
+    },
+  });
+
+  if (!res.ok && res.status !== 204) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur suppression vidéo");
+  }
+
+  return true;
+}
+
+
+/**
+ * IDs des vidéos mises en avant
+ * @returns {Promise<string[]>}
+ */
+export async function fetchFeaturedVideoIds(userId, token) {
+  const res = await fetch(`${API_BASE}/users/${userId}/videos/featured`, {
+    headers: {
+      "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`,
+    },
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur fetch featured");
+  }
+
+  return await res.json();
+}
+
+
+/**
+ * Mettre à jour les vidéos mises en avant
+ */
+export async function updateFeaturedVideoIds(userId, ids, token) {
+  const res = await fetch(`${API_BASE}/users/${userId}/videos/featured`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`,
+    },
+    body: JSON.stringify({ ids }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur update featured");
+  }
+
+  return await res.json(); // retourne ids
+}
+
+
+/**
+ * Ajouter un événement agenda
+ * @returns {Promise<AgendaItem>}
+ */
+export async function addAgendaEvent(profileId, data, token) {
+  const res = await fetch(`${API_BASE}/creators/${profileId}/agenda`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur ajout agenda");
+  }
+
+  return await res.json();
+}
+
+
+/**
+ * Modifier un événement agenda
+ * @returns {Promise<AgendaItem>}
+ */
+export async function updateAgendaEvent(profileId, eventId, data, token) {
+  const res = await fetch(`${API_BASE}/creators/${profileId}/agenda/${eventId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur update agenda");
+  }
+
+  return await res.json();
+}
+
+
+
+/**
+ * Supprimer un événement agenda
+ */
+export async function deleteAgendaEvent(profileId, eventId, token) {
+  const res = await fetch(`${API_BASE}/creators/${profileId}/agenda/${eventId}`, {
+    method: "DELETE",
+    headers: {
+      "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`,
+    },
+  });
+
+  if (!res.ok && res.status !== 204) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur suppression agenda");
+  }
+
+  return true;
+}
+
+
+// fetchDashboardFeed
+// GET /dashboard/feed
+// @returns { items, nextOffset, hasMore }
+
+export async function fetchDashboardFeed({ offset = 0, limit = 10 } = {}) {
+  const res = await fetch(`${API_BASE}/dashboard/feed?offset=${offset}&limit=${limit}`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+      "Authorization": `Bearer ${getToken()}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Erreur lors du chargement du feed");
+  }
+
+  return res.json();
+}
+
+
+// createDashboardPost
+// POST /dashboard/posts
+
+export async function createDashboardPost(data) {
+  const res = await fetch(`${API_BASE}/dashboard/posts`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Authorization": `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || "Erreur création post");
+  }
+
+  return res.json();
+}
+
+
+
+// deleteDashboardPost
+// DELETE /dashboard/posts/{postId}
+
+export async function deleteDashboardPost(postId) {
+  const res = await fetch(`${API_BASE}/dashboard/posts/${postId}`, {
+    method: "DELETE",
+    headers: {
+      "Accept": "application/json",
+      "Authorization": `Bearer ${getToken()}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Erreur suppression post");
+  }
+
+  return true;
+}
+
+
+
+// updateWipPost
+// PATCH /dashboard/wip
+
+export async function updateWipPost(data) {
+  const res = await fetch(`${API_BASE}/dashboard/wip`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Authorization": `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || "Erreur mise à jour WIP");
+  }
+
+  return res.json();
+}
+
+
+// toggleWipPin
+// POST /dashboard/wip/{postId}/pin
+
+export async function toggleWipPin(postId) {
+  const res = await fetch(`${API_BASE}/dashboard/wip/${postId}/pin`, {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Authorization": `Bearer ${getToken()}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Erreur pin/unpin WIP");
+  }
+
+  return res.json(); // { is_pinned: boolean }
+}
+
+
+// fetchCurrentPlan
+// GET /subscription
+// @returns { plan, expiresAt, status }
+
+export async function fetchCurrentPlan() {
+  const res = await fetch(`${API_BASE}/subscription`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+      "Authorization": `Bearer ${getToken()}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Erreur récupération abonnement");
+  }
+
+  return res.json();
+}
+
+
+// upgradeToPremium
+// POST /subscription/premium
+// @returns { success: true, plan: "premium" }
+
+export async function upgradeToPremium() {
+  const res = await fetch(`${API_BASE}/subscription/premium`, {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Authorization": `Bearer ${getToken()}`,
+    },
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+
+    if (res.status === 422) {
+      throw new Error(error.message || "Action impossible");
+    }
+
+    throw new Error("Erreur upgrade premium");
+  }
+
+  return res.json();
+}
+
+
+// cancelPremium
+// DELETE /subscription/premium
+// @returns { success: true, plan: "free" }
+
+export async function cancelPremium() {
+  const res = await fetch(`${API_BASE}/subscription/premium`, {
+    method: "DELETE",
+    headers: {
+      "Accept": "application/json",
+      "Authorization": `Bearer ${getToken()}`,
+    },
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+
+    if (res.status === 422) {
+      throw new Error(error.message || "Aucun abonnement à annuler");
+    }
+
+    throw new Error("Erreur annulation abonnement");
+  }
+
+  return res.json();
 }

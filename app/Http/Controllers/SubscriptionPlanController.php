@@ -4,147 +4,93 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\SubscriptionPlan;
+use App\Models\UserSubscription;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SubscriptionPlanController extends Controller
 {
-     // 📌 GET ALL
-    public function index()
-    {
-        return response()->json([
-            'success' => true,
-            'data' => SubscriptionPlan::latest()->get()
-        ]);
-    }
-    // 📌 STORE
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'price' => 'required|numeric',
-            'billing_cycle' => 'nullable|in:monthly,yearly',
-            'features' => 'nullable|array'
-        ]);
 
-        $plan = SubscriptionPlan::create($request->all());
+
+  // ── fetchCurrentPlan ──────────────────────────────────────────────────────
+    // GET /v1/subscription
+    // @returns { plan: "free"|"premium"|"pro", expiresAt: string|null }
+
+    public function current(Request $request): JsonResponse
+    {
+        $user = $request->user()->load('activeSubscription.plan');
+
+        $sub = $user->activeSubscription;
 
         return response()->json([
-            'success' => true,
-            'message' => 'Plan créé',
-            'data' => $plan
-        ], 201);
-    }
-
-    // 📌 SHOW
-    public function show($id)
-    {
-        $plan = SubscriptionPlan::find($id);
-
-        if (!$plan) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Plan non trouvé'
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $plan
+            'plan'      => $sub?->plan->slug ?? 'free',
+            'expiresAt' => $sub?->expires_at?->toIso8601String(),
+            'status'    => $sub?->status ?? 'none',
         ]);
     }
 
-    // 📌 UPDATE
-    public function update(Request $request, $id)
-    {
-        $plan = SubscriptionPlan::find($id);
+    // ── upgradeToPremium ──────────────────────────────────────────────────────
+    // POST /v1/subscription/premium
+    // @returns { success: boolean, plan: "premium" }
 
-        if (!$plan) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Plan non trouvé'
-            ], 404);
-        }
-
-        $request->validate([
-            'name' => 'sometimes|string',
-            'price' => 'sometimes|numeric',
-            'billing_cycle' => 'nullable|in:monthly,yearly',
-            'features' => 'nullable|array'
-        ]);
-
-        $plan->update($request->all());
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Plan mis à jour',
-            'data' => $plan
-        ]);
-    }
-
-    // 📌 DELETE
-    public function destroy($id)
-    {
-        $plan = SubscriptionPlan::find($id);
-
-        if (!$plan) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Plan non trouvé'
-            ], 404);
-        }
-
-        $plan->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Plan supprimé'
-        ]);
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /**
-     * @return \Illuminate\Http\JsonResponse { success: boolean, plan: "premium" }
-     */
-    public function upgradeToPremium(Request $request)
+    public function upgrade(Request $request): JsonResponse
     {
         $user = $request->user();
 
-        $user->update(['plan' => 'premium']);
+        abort_if($user->plan === 'premium', 422, 'Vous êtes déjà en plan Premium.');
+        abort_if($user->plan === 'pro',     422, 'Le plan Pro ne peut pas être rétrogradé via cette route.');
 
-        // TODO: intégrer passerelle de paiement (Stripe, etc.)
+        $plan = SubscriptionPlan::where('slug', 'premium')
+            ->where('is_active', true)
+            ->firstOrFail();
 
-        return response()->json([
-            'success' => true,
-            'plan'    => 'premium',
-        ]);
+        DB::transaction(function () use ($user, $plan) {
+            // Annuler l'abonnement actif éventuel
+            UserSubscription::where('user_id', $user->id)
+                ->where('status', 'active')
+                ->update([
+                    'status'       => 'cancelled',
+                    'cancelled_at' => now(),
+                ]);
+
+            // Créer le nouvel abonnement
+            UserSubscription::create([
+                'user_id'    => $user->id,
+                'plan_id'    => $plan->id,
+                'started_at' => now(),
+                'expires_at' => now()->addMonth(),
+                'status'     => 'active',
+            ]);
+
+            // Mettre à jour le champ plan du user (dénormalisation pour les requêtes rapides)
+            $user->update(['plan' => 'premium']);
+        });
+
+        return response()->json(['success' => true, 'plan' => 'premium']);
     }
 
-    /**
-     * @return \Illuminate\Http\JsonResponse { success: boolean, plan: "free" }
-     */
-    public function cancelPremium(Request $request)
+    // ── cancelPremium ─────────────────────────────────────────────────────────
+    // DELETE /v1/subscription/premium
+    // @returns { success: boolean, plan: "free" }
+
+    public function cancel(Request $request): JsonResponse
     {
         $user = $request->user();
 
-        $user->update(['plan' => 'free']);
+        abort_if($user->plan === 'free', 422, 'Aucun abonnement Premium actif à annuler.');
 
-        // TODO: résilier l'abonnement côté passerelle de paiement
+        DB::transaction(function () use ($user) {
+            UserSubscription::where('user_id', $user->id)
+                ->where('status', 'active')
+                ->update([
+                    'status'       => 'cancelled',
+                    'cancelled_at' => now(),
+                ]);
 
-        return response()->json([
-            'success' => true,
-            'plan'    => 'free',
-        ]);
+            $user->update(['plan' => 'free']);
+        });
+
+        return response()->json(['success' => true, 'plan' => 'free']);
     }
 }

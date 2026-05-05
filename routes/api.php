@@ -6,6 +6,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ProfileController;
+use App\Http\Controllers\CreatorController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FollowsController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\VideoDisciplinesController;
@@ -60,12 +62,6 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-Route::get('/subscription-plans', [SubscriptionPlanController::class, 'index']);
-Route::post('/subscription-plans', [SubscriptionPlanController::class, 'store']);
-Route::get('/subscription-plans/{id}', [SubscriptionPlanController::class, 'show']);
-Route::put('/subscription-plans/{id}', [SubscriptionPlanController::class, 'update']);
-Route::delete('/subscription-plans/{id}', [SubscriptionPlanController::class, 'destroy']);
-
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -74,9 +70,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/creators/{creatorId}/follow', [FollowsController::class, 'unfollow']);
     Route::get('/creators/recommended',           [FollowsController::class, 'recommended']);
 
-    // Abonnements
-    Route::post('/subscription/upgrade', [SubscriptionPlanController::class, 'upgradeToPremium']);
-    Route::post('/subscription/cancel',  [SubscriptionPlanController::class, 'cancelPremium']);
+    // fetchFollowStatus
+    Route::get('/creators/{creatorId}/follow',         [FollowsController::class, 'status']);
+    // fetchFollowing
+    Route::get('/users/{userId}/following',            [FollowsController::class, 'following']);
+    // fetchFollowers
+    Route::get('/users/{userId}/followers',            [FollowsController::class, 'followers']);
+
+    // // Abonnements
+    // Route::post('/subscription/upgrade', [SubscriptionPlanController::class, 'upgradeToPremium']);
+    // Route::post('/subscription/cancel',  [SubscriptionPlanController::class, 'cancelPremium']);
 
     //route pour les videos
     Route::get('/videos', [VideosController::class, 'feed']);
@@ -94,60 +97,59 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-        // ── Recommandations & Follow ──────────────────────────────────────────
-        // fetchRecommendedCreators
-        // Route::get('/creators/recommended',                [CreatorController::class, 'recommended']);
-        // // followCreator
-        // Route::post('/creators/{creatorId}/follow',        [FollowController::class, 'follow']);
-        // // unfollowCreator
-        // Route::delete('/creators/{creatorId}/follow',      [FollowController::class, 'unfollow']);
-        // // fetchFollowStatus
-        // Route::get('/creators/{creatorId}/follow',         [FollowController::class, 'status']);
-        // // fetchFollowing
-        // Route::get('/users/{userId}/following',            [FollowController::class, 'following']);
-        // // fetchFollowers
-        // Route::get('/users/{userId}/followers',            [FollowController::class, 'followers']);
+    // ── Recommandations & Follow ──────────────────────────────────────────
+    // fetchRecommendedCreators
+    Route::get('/creators/recommended',                [CreatorController::class, 'recommended']);
+    // // followCreator
+    // Route::post('/creators/{creatorId}/follow',        [FollowController::class, 'follow']);
+    // // unfollowCreator
+    // Route::delete('/creators/{creatorId}/follow',      [FollowController::class, 'unfollow']);
+    // // fetchFollowStatus
+    // Route::get('/creators/{creatorId}/follow',         [FollowController::class, 'status']);
+    // // fetchFollowing
+    // Route::get('/users/{userId}/following',            [FollowController::class, 'following']);
+    // // fetchFollowers
+    // Route::get('/users/{userId}/followers',            [FollowController::class, 'followers']);
 
-        // ── Gestion vidéos propriétaire ───────────────────────────────────────
-        // fetchPinnedVideos
-        Route::get('/users/{userId}/videos',               [VideoDisciplinesController::class, 'index']);
-        // addPinnedVideo
-        Route::post('/users/{userId}/videos',              [VideoDisciplinesController::class, 'store']);
-        // deletePinnedVideo
-        Route::delete('/users/{userId}/videos/{videoId}',  [VideoDisciplinesController::class, 'destroy']);
-        // fetchFeaturedVideoIds
-        Route::get('/users/{userId}/videos/featured',      [VideoDisciplinesController::class, 'featuredIds']);
-        // updateFeaturedVideoIds
-        Route::put('/users/{userId}/videos/featured',      [VideoDisciplinesController::class, 'updateFeatured']);
+    // ── Gestion vidéos propriétaire ───────────────────────────────────────
+    // fetchPinnedVideos
+    Route::get('/users/{userId}/videos',               [VideoDisciplinesController::class, 'index']);
+    // addPinnedVideo
+    Route::post('/users/{userId}/videos',              [VideoDisciplinesController::class, 'store']);
+    // deletePinnedVideo
+    Route::delete('/users/{userId}/videos/{videoId}',  [VideoDisciplinesController::class, 'destroy']);
+    // fetchFeaturedVideoIds
+    Route::get('/users/{userId}/videos/featured',      [VideoDisciplinesController::class, 'featuredIds']);
+    // updateFeaturedVideoIds
+    Route::put('/users/{userId}/videos/featured',      [VideoDisciplinesController::class, 'updateFeatured']);
 
-        // ── Agenda (gestion propriétaire) ─────────────────────────────────────
-        // addAgendaEvent
-        Route::post('/creators/{profileId}/agenda',               [AgendaController::class, 'store']);
-        // updateAgendaEvent
-        Route::patch('/creators/{profileId}/agenda/{eventId}',    [AgendaController::class, 'update']);
-        // deleteAgendaEvent
-        Route::delete('/creators/{profileId}/agenda/{eventId}',   [AgendaController::class, 'destroy']);
+    // ── Agenda (gestion propriétaire) ─────────────────────────────────────
+    // addAgendaEvent
+    Route::post('/creators/{profileId}/agenda',               [AgendaController::class, 'store']);
+    // updateAgendaEvent
+    Route::patch('/creators/{profileId}/agenda/{eventId}',    [AgendaController::class, 'update']);
+    // deleteAgendaEvent
+    Route::delete('/creators/{profileId}/agenda/{eventId}',   [AgendaController::class, 'destroy']);
 
-        // ── Dashboard (L'Établi) ──────────────────────────────────────────────
-        // fetchDashboardFeed
-        // Route::get('/dashboard/feed',                      [DashboardController::class, 'feed']);
-        // // createDashboardPost
-        // Route::post('/dashboard/posts',                    [DashboardController::class, 'store']);
-        // // deleteDashboardPost
-        // Route::delete('/dashboard/posts/{postId}',         [DashboardController::class, 'destroy']);
-        // // updateWipPost
-        // Route::patch('/dashboard/wip',                     [DashboardController::class, 'updateWip']);
-        // // toggleWipPin
-        // Route::post('/dashboard/wip/{postId}/pin',         [DashboardController::class, 'toggleWipPin']);
+    // ── Dashboard (L'Établi) ──────────────────────────────────────────────
+    // fetchDashboardFeed
+    Route::get('/dashboard/feed',                      [DashboardController::class, 'feed']);
+    // // createDashboardPost
+    Route::post('/dashboard/posts',                    [DashboardController::class, 'store']);
+    // // deleteDashboardPost
+    Route::delete('/dashboard/posts/{postId}',         [DashboardController::class, 'destroy']);
+    // // updateWipPost
+    Route::patch('/dashboard/wip',                     [DashboardController::class, 'updateWip']);
+    // // toggleWipPin
+    Route::post('/dashboard/wip/{postId}/pin',         [DashboardController::class, 'toggleWipPin']);
 
-        // ── Abonnements ───────────────────────────────────────────────────────
-        // fetchCurrentPlan
-        // Route::get('/subscription',                        [SubscriptionPlanController::class, 'current']);
-        // // upgradeToPremium
-        // Route::post('/subscription/premium',               [SubscriptionPlanController::class, 'upgrade']);
-        // // cancelPremium
-        // Route::delete('/subscription/premium',             [SubscriptionPlanController::class, 'cancel']);
-
+    // ── Abonnements ───────────────────────────────────────────────────────
+    // fetchCurrentPlan
+    Route::get('/subscription',                        [SubscriptionPlanController::class, 'current']);
+    // // upgradeToPremium
+    Route::post('/subscription/premium',               [SubscriptionPlanController::class, 'upgrade']);
+    // // cancelPremium
+    Route::delete('/subscription/premium',             [SubscriptionPlanController::class, 'cancel']);
 });
 
 
