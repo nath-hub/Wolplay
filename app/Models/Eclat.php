@@ -5,14 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class Eclat extends Model
 {
-     use HasUuids;
+    use HasUuids;
 
     public $timestamps = false;
 
-      protected $primaryKey = 'id';
+    protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
 
@@ -23,11 +24,21 @@ class Eclat extends Model
      */
     protected $guarded = ['id'];
 
-     protected $casts = [
+    protected $casts = [
         'amount'  => 'integer',
         'sent_at' => 'datetime',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (!$model->id) {
+                $model->id = (string) Str::uuid();
+            }
+        });
+    }
     // ── Relations ──────────────────────────────────────────────────────────────
 
     public function sender(): BelongsTo

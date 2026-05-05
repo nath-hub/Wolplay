@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class EclatWallet extends Model
 {
@@ -19,8 +20,18 @@ class EclatWallet extends Model
      * @var list<string>
      */
     protected $guarded = ['id'];
+    protected static function boot()
+    {
+        parent::boot();
 
-     protected $casts = ['balance' => 'integer'];
+        static::creating(function ($model) {
+            if (!$model->id) {
+                $model->id = (string) Str::uuid();
+            }
+        });
+    }
+
+    protected $casts = ['balance' => 'integer'];
 
     // ── Relations ──────────────────────────────────────────────────────────────
 

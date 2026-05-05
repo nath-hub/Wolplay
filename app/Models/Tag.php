@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 
 class Tag extends Model
 {
@@ -21,7 +22,18 @@ class Tag extends Model
     protected $guarded = ['id'];
 
 
-       // ── Relations ──────────────────────────────────────────────────────────────
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (!$model->id) {
+                $model->id = (string) Str::uuid();
+            }
+        });
+    }
+
+    // ── Relations ──────────────────────────────────────────────────────────────
 
     public function videos(): BelongsToMany
     {

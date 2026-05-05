@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Categorie extends Model
 {
@@ -20,8 +21,17 @@ class Categorie extends Model
      * @var list<string>
      */
     protected $guarded = ['id'];
+    protected static function boot()
+    {
+        parent::boot();
 
-      protected $casts = [
+        static::creating(function ($model) {
+            if (!$model->id) {
+                $model->id = (string) Str::uuid();
+            }
+        });
+    }
+    protected $casts = [
         'min_disciplines' => 'integer',
         'max_disciplines' => 'integer',
         'format_required' => 'boolean',

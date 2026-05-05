@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 
 class Discipline extends Model
 {
@@ -20,7 +21,17 @@ class Discipline extends Model
      */
     protected $guarded = ['id'];
 
-      protected $casts = [
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (!$model->id) {
+                $model->id = (string) Str::uuid();
+            }
+        });
+    }
+    protected $casts = [
         'sort_order' => 'integer',
         'is_active'  => 'boolean',
     ];
@@ -31,8 +42,8 @@ class Discipline extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_disciplines')
-                    ->withPivot('sort_order')
-                    ->orderByPivot('sort_order');
+            ->withPivot('sort_order')
+            ->orderByPivot('sort_order');
     }
 
     /** Vidéos taggées avec cette discipline */

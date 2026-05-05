@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class QuestContribution extends Model
 {
@@ -21,10 +22,21 @@ class QuestContribution extends Model
     protected $guarded = ['id'];
 
 
-      protected $casts = [
+    protected $casts = [
         'eclats_amount'  => 'integer',
         'contributed_at' => 'datetime',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (!$model->id) {
+                $model->id = (string) Str::uuid();
+            }
+        });
+    }
 
     // ── Relations ──────────────────────────────────────────────────────────────
 

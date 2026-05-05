@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 
 class Collection extends Model
 {
@@ -20,7 +21,16 @@ class Collection extends Model
      * @var list<string>
      */
     protected $guarded = ['id'];
+    protected static function boot()
+    {
+        parent::boot();
 
+        static::creating(function ($model) {
+            if (!$model->id) {
+                $model->id = (string) Str::uuid();
+            }
+        });
+    }
 
      // ── Relations ──────────────────────────────────────────────────────────────
 
@@ -34,8 +44,8 @@ class Collection extends Model
     public function videos(): BelongsToMany
     {
         return $this->belongsToMany(Video::class, 'collection_videos')
-                    ->withPivot('sort_order')
-                    ->orderByPivot('sort_order');
+            ->withPivot('sort_order')
+            ->orderByPivot('sort_order');
     }
 
     // ── Scopes ─────────────────────────────────────────────────────────────────

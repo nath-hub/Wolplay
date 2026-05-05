@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Post extends Model
 {
@@ -19,9 +20,18 @@ class Post extends Model
      * @var list<string>
      */
     protected $guarded = ['id'];
+    protected static function boot()
+    {
+        parent::boot();
 
+        static::creating(function ($model) {
+            if (!$model->id) {
+                $model->id = (string) Str::uuid();
+            }
+        });
+    }
 
-     protected $casts = [
+    protected $casts = [
         'is_pinned'    => 'boolean',
         'is_wip'       => 'boolean',
         'wip_progress' => 'integer',
@@ -39,7 +49,7 @@ class Post extends Model
     public function reports(): HasMany
     {
         return $this->hasMany(Report::class, 'target_id')
-                    ->where('target_type', 'post');
+            ->where('target_type', 'post');
     }
 
     // ── Scopes ─────────────────────────────────────────────────────────────────
@@ -66,8 +76,20 @@ class Post extends Model
 
     // ── Helpers ────────────────────────────────────────────────────────────────
 
-    public function isVideo(): bool  { return $this->post_type === 'video'; }
-    public function isWip(): bool    { return $this->post_type === 'wip'; }
-    public function isPhoto(): bool  { return $this->post_type === 'photo'; }
-    public function isText(): bool   { return $this->post_type === 'text'; }
+    public function isVideo(): bool
+    {
+        return $this->post_type === 'video';
+    }
+    public function isWip(): bool
+    {
+        return $this->post_type === 'wip';
+    }
+    public function isPhoto(): bool
+    {
+        return $this->post_type === 'photo';
+    }
+    public function isText(): bool
+    {
+        return $this->post_type === 'text';
+    }
 }

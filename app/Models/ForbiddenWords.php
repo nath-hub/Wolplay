@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class ForbiddenWords extends Model
 {
@@ -19,8 +20,19 @@ class ForbiddenWords extends Model
      */
     protected $guarded = ['id'];
 
+    protected static function boot()
+    {
+        parent::boot();
 
-       /** Vérifie si un texte contient un mot interdit et retourne l'action à prendre. */
+        static::creating(function ($model) {
+            if (!$model->id) {
+                $model->id = (string) Str::uuid();
+            }
+        });
+    }
+
+
+    /** Vérifie si un texte contient un mot interdit et retourne l'action à prendre. */
     public static function check(string $text): ?self
     {
         $words = self::all();
