@@ -34,7 +34,7 @@ class VideoDisciplinesController extends Controller
     #[OA\Response(
         response: 200,
         description: 'Liste des vidéos du créateur',
-         content: new OA\JsonContent(
+        content: new OA\JsonContent(
             properties: [
                 new OA\Property(property: 'success', type: 'boolean', example: true),
                 new OA\Property(property: 'message', type: 'string', example: 'Vidéos récupérées avec succès'),
@@ -170,53 +170,100 @@ class VideoDisciplinesController extends Controller
     {
         $this->authorizeOwner($userId);
 
-        $request->validate([
-            'platform'         => 'required|in:youtube,twitch',
-            'platform_video_id' => 'required|string|max:255',
-            'embed_url'        => 'required|url',
-            'title'            => 'required|string|max:255',
-            'description'      => 'nullable|string',
-            'thumbnail_url'    => 'nullable|url',
-            'category_id'      => 'required|uuid|exists:categories,id',
-            'format'           => 'nullable|in:booknook,roombox,vignette,figurine,maquette,wolplay',
-            'author_certified' => 'required|accepted',   // doit être true (case cochée §2.2)
-            'discipline_ids'   => 'nullable|array|max:2',
-            'discipline_ids.*' => 'uuid|exists:disciplines,id',
-            'tag_labels'       => 'nullable|array',
-            'tag_labels.*'     => 'string|max:50',
+        $validated = $request->validate([
+            'title'         => 'required|string|max:255',
+            'description'   => 'nullable|string',
+            'thumbnailUrl'  => 'nullable|url',
+
+            'categories'    => 'required|array|min:1',
+            'categories.*'  => 'string',
+
+            'formats'       => 'nullable|array',
+            'formats.*'     => 'string|in:booknook,roombox,vignette,figurine,maquette,wolplay',
+
+            'disciplines'   => 'nullable|array|max:2',
+            'disciplines.*' => 'string',
+
+            'tags'          => 'nullable|array',
+            'tags.*'        => 'string|max:50',
+
+            'sourceId'      => 'required|in:youtube,twitch',
+            'youtubeId'     => 'nullable|string',
+            'url'           => 'required|url',
+
+            'author_certified' => 'required|accepted',
         ]);
 
-        $video = DB::transaction(function () use ($request, $userId) {
+        $video = DB::transaction(function () use ($validated, $request, $userId) {
 
             $video = Video::create([
                 'creator_id'        => $userId,
-                'platform'          => $request->input('platform'),
-                'platform_video_id' => $request->input('platform_video_id'),
-                'embed_url'         => $request->input('embed_url'),
+                'platform'          => $request->input('provider'),
+                'platform_video_id' => $request->input('youtubeId') ?? null,
+                'embed_url'         => $request->input('url') ?? null,
+                'thumbnailUrl'         => $request->input('thumbnailUrl') ?? null,
                 'title'             => $request->input('title'),
                 'description'       => $request->input('description'),
                 'thumbnail_url'     => $request->input('thumbnail_url'),
-                'category_id'       => $request->input('category_id'),
-                'format'            => $request->input('format'),
                 'author_certified'  => true,
                 'status'            => 'published',
                 'published_at'      => now(),
             ]);
 
-            // Disciplines (0-2 selon catégorie)
-            if ($request->filled('discipline_ids')) {
-                $video->disciplines()->sync($request->input('discipline_ids'));
+            // =========================
+            // 🔹 CATEGORIES
+            // =========================
+            $categoryIds = collect($validated['categories'])->map(function ($slug) {
+                return \App\Models\Categorie::firstOrCreate(
+                    ['slug' => strtolower($slug)],
+                    ['name' => ucfirst($slug)]
+                )->id;
+            });
+
+            $video->categories()->sync($categoryIds);
+
+            // =========================
+            // 🔹 FORMATS
+            // =========================
+            if (!empty($validated['formats'])) {
+                $formatIds = collect($validated['formats'])->map(function ($slug) {
+                    return \App\Models\Format::firstOrCreate(
+                        ['slug' => strtolower($slug)],
+                        ['name' => ucfirst($slug)]
+                    )->id;
+                });
+
+                $video->formats()->sync($formatIds);
             }
 
-            // Tags libres — créer si inexistants
-            if ($request->filled('tag_labels')) {
-                $tagIds = collect($request->input('tag_labels'))->map(function ($label) {
-                    return \App\Models\Tag::firstOrCreate(['label' => $label])->id;
+            // =========================
+            // 🔹 DISCIPLINES
+            // =========================
+            if (!empty($validated['disciplines'])) {
+                $disciplineIds = collect($validated['disciplines'])->map(function ($slug) {
+                    return \App\Models\Discipline::firstOrCreate(
+                        ['slug' => strtolower($slug)],
+                        ['name' => ucfirst($slug)]
+                    )->id;
                 });
+
+                $video->disciplines()->sync($disciplineIds);
+            }
+
+            // =========================
+            // 🔹 TAGS
+            // =========================
+            if (!empty($validated['tags'])) {
+                $tagIds = collect($validated['tags'])->map(function ($label) {
+                    return \App\Models\Tag::firstOrCreate([
+                        'label' => strtolower(trim($label))
+                    ])->id;
+                });
+
                 $video->tags()->sync($tagIds);
             }
 
-            // Promouvoir le user en créateur s'il ne l'est pas encore
+            // 🔹 Promote user
             $user = \App\Models\User::find($userId);
             if ($user->role === 'member') {
                 $user->update(['role' => 'creator']);

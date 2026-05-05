@@ -26,18 +26,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('thumbnail_url')->nullable();
 
-            // Catégorisation (§2.3)
-            $table->foreignUuid('category_id')
-                ->constrained('categories')->onDelete('restrict');
-            $table->enum('format', [
-                'booknook',
-                'roombox',
-                'vignette',
-                'figurine',
-                'maquette',
-                'wolplay',
-            ])->nullable();
-
             // Obligations légales & modération
             $table->boolean('author_certified')->default(false); // case obligatoire §2.2
             $table->boolean('is_featured')->default(false);      // dans les 6 slots mis en avant
@@ -50,8 +38,7 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->index(['creator_id', 'status']);
-            $table->index('is_wolplay_pick');
-            $table->index('category_id');
+            $table->index('is_wolplay_pick'); 
         });
     }
 
@@ -63,3 +50,6 @@ return new class extends Migration
         Schema::dropIfExists('videos');
     }
 };
+
+
+

@@ -40,9 +40,14 @@ class Video extends Model
     }
 
     /** Catégorie (Wolplays / Tutorials / Collections) */
-    public function category(): BelongsTo
+    public function category()
     {
-        return $this->belongsTo(Categorie::class);
+        return $this->belongsToMany(Categorie::class, 'video_categories');
+    }
+
+    public function formats()
+    {
+        return $this->belongsToMany(Format::class, 'video_formats');
     }
 
     /** Disciplines associées (0–2 selon catégorie) */
