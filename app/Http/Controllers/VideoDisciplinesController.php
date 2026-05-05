@@ -191,7 +191,7 @@ class VideoDisciplinesController extends Controller
             'youtubeId'     => 'nullable|string',
             'url'           => 'required|url',
 
-            'author_certified' => 'nullable|accepted',
+            'author_certified' => 'nullable',
         ]);
 
         $video = DB::transaction(function () use ($validated, $request, $userId) {
