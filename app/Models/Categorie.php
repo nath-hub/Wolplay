@@ -39,9 +39,9 @@ class Categorie extends Model
 
     // ── Relations ──────────────────────────────────────────────────────────────
 
-    public function videos(): HasMany
+    public function videos()
     {
-        return $this->hasMany(Video::class);
+        return $this->belongsToMany(Video::class, 'video_categories');
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────────
