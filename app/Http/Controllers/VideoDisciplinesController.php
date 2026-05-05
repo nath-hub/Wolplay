@@ -214,8 +214,7 @@ class VideoDisciplinesController extends Controller
             // 🔹 CATEGORIES
             // =========================
             $categoryIds = collect($validated['categories'])->map(function ($slug) {
-                return \App\Models\Categorie::firstOrCreate(
-                    ['slug' => strtolower($slug)],
+                return \App\Models\Categorie::firstOrCreate( 
                     ['name' => ucfirst($slug)]
                 )->id;
             });
