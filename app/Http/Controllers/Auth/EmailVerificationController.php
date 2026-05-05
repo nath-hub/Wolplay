@@ -404,7 +404,7 @@ class EmailVerificationController extends Controller
 
             'rating' => (float) ($user->rating ?? 0),
 
-            'follows' => $user->follows->pluck('id')->toArray(),
+            'follows' => $user->follows ? $user->follows->pluck('id')->toArray() : [],
 
             'videoHistory' => $user->videoHistory ?? [],
 

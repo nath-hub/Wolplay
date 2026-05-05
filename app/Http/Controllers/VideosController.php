@@ -193,10 +193,15 @@ class VideosController extends Controller
             ->inRandomOrder()
             ->first();
 
+                // 🔥 sécurité obligatoire
+    if (!$video) {
+        return response()->json(null, 200);
+    }
+
         return response()->json([
             'id'         => $video->id,
-            'youtubeId'  => (string) $video->youtube_id,
-            'videoTitle' => (string) $video->title,
+            'youtubeId'  => (string) $video->youtube_id ?? '',
+            'videoTitle' => (string) $video->title ?? '',
 
             'creator' => [
                 'id'     => $video->creator->id ?? null,
