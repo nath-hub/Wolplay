@@ -1,0 +1,197 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use App\Models\AgendaItem;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
+
+class AgendaController extends Controller
+{
+    // ── fetchAgendaEvents ─────────────────────────────────────────────────────
+
+    public function index(string $profileId): JsonResponse
+    {
+        $items = AgendaItem::where('user_id', $profileId)
+            ->where('is_cancelled', false)
+            ->orderBy('scheduled_at')
+            ->get();
+
+        return response()->json($items);
+    }
+
+    // ── addAgendaEvent ────────────────────────────────────────────────────────
+    #[OA\Post(
+        path: '/api/creators/{profileId}/agenda',
+        summary: 'Ajouter un événement à l\'agenda',
+        description: 'Crée un nouvel élément (Live, Sortie, Événement) dans l\'agenda du créateur.',
+        tags: ['Agenda'],
+        security: [['BearerAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'profileId',
+                in: 'path',
+                required: true,
+                description: 'ID du profil créateur (UUID)',
+                schema: new OA\Schema(type: 'string', format: 'uuid')
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['title', 'type', 'scheduled_at'],
+                properties: [
+                    new OA\Property(property: 'title', type: 'string', maxLength: 255, example: 'Mon Live de lancement'),
+                    new OA\Property(property: 'description', type: 'string', maxLength: 1000, nullable: true),
+                    new OA\Property(property: 'type', type: 'string', enum: ['live', 'release', 'event']),
+                    new OA\Property(property: 'url', type: 'string', format: 'url', nullable: true, example: 'https://wolplay.io/live/123'),
+                    new OA\Property(property: 'scheduled_at', type: 'string', format: 'date-time', description: 'Date de l\'événement (doit être dans le futur)')
+                ]
+            )
+        )
+    )]
+    #[OA\Response(
+        response: 201,
+        description: 'Événement créé avec succès',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: true),
+                new OA\Property(property: 'message', type: 'string', example: 'Vidéos récupérées avec succès'),
+            ]
+        )
+    )]
+    #[OA\Response(response: 403, description: 'Interdit - Vous n\'êtes pas le propriétaire de ce profil')]
+    public function store(Request $request, string $profileId): JsonResponse
+    {
+        $this->authorizeOwner($profileId);
+
+        $request->validate([
+            'title'        => 'required|string|max:255',
+            'description'  => 'nullable|string|max:1000',
+            'type'         => 'required|in:live,release,event',
+            'url'          => 'nullable|url',
+            'scheduled_at' => 'required|date|after:now',
+        ]);
+
+        $item = AgendaItem::create([
+            'user_id'      => $profileId,
+            'title'        => $request->input('title'),
+            'description'  => $request->input('description'),
+            'type'         => $request->input('type'),
+            'url'          => $request->input('url'),
+            'scheduled_at' => $request->input('scheduled_at'),
+        ]);
+
+        return response()->json($item, 201);
+    }
+
+    // ── updateAgendaEvent ─────────────────────────────────────────────────────
+    #[OA\Patch(
+        path: '/api/creators/{profileId}/agenda/{eventId}',
+        summary: 'Modifier un événement de l\'agenda',
+        description: 'Met à jour les informations d\'un événement existant.',
+        tags: ['Agenda'],
+        security: [['BearerAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'profileId',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'string', format: 'uuid')
+            ),
+            new OA\Parameter(
+                name: 'eventId',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'string', format: 'uuid')
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'title', type: 'string', maxLength: 255),
+                    new OA\Property(property: 'description', type: 'string', maxLength: 1000, nullable: true),
+                    new OA\Property(property: 'type', type: 'string', enum: ['live', 'release', 'event']),
+                    new OA\Property(property: 'url', type: 'string', format: 'url', nullable: true),
+                    new OA\Property(property: 'scheduled_at', type: 'string', format: 'date-time'),
+                    new OA\Property(property: 'is_cancelled', type: 'boolean', example: false)
+                ]
+            )
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Événement mis à jour',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: true),
+                new OA\Property(property: 'message', type: 'string', example: 'Événement mis à jour avec succès'),
+            ]
+        )
+    )]
+    #[OA\Response(response: 404, description: 'Événement non trouvé')]
+    public function update(Request $request, string $profileId, string $eventId): JsonResponse
+    {
+        $this->authorizeOwner($profileId);
+
+        $item = AgendaItem::where('user_id', $profileId)->findOrFail($eventId);
+
+        $request->validate([
+            'title'        => 'sometimes|string|max:255',
+            'description'  => 'nullable|string|max:1000',
+            'type'         => 'sometimes|in:live,release,event',
+            'url'          => 'nullable|url',
+            'scheduled_at' => 'sometimes|date|after:now',
+            'is_cancelled' => 'sometimes|boolean',
+        ]);
+
+        $item->update($request->only([
+            'title',
+            'description',
+            'type',
+            'url',
+            'scheduled_at',
+            'is_cancelled',
+        ]));
+
+        return response()->json($item);
+    }
+
+    // ── deleteAgendaEvent ─────────────────────────────────────────────────────
+    #[OA\Delete(
+        path: '/api/creators/{profileId}/agenda/{eventId}',
+        summary: 'Supprimer un événement',
+        description: 'Supprime définitivement un événement de l\'agenda.',
+        tags: ['Agenda'],
+        security: [['BearerAuth' => []]],
+        parameters: [
+            new OA\Parameter(name: 'profileId', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'uuid')),
+            new OA\Parameter(name: 'eventId', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'uuid'))
+        ]
+    )]
+    #[OA\Response(response: 204, description: 'Événement supprimé')]
+    public function destroy(string $profileId, string $eventId): JsonResponse
+    {
+        $this->authorizeOwner($profileId);
+
+        $item = AgendaItem::where('user_id', $profileId)->findOrFail($eventId);
+        $item->delete();
+
+        return response()->json(null, 204);
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
+    private function authorizeOwner(string $profileId): void
+    {
+        $user = auth()->user();
+
+        abort_unless(
+            $user && ($user->id === $profileId || $user->isAdmin()),
+            403,
+            'Action non autorisée.'
+        );
+    }
+}

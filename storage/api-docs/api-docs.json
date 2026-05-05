@@ -6,6 +6,243 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/api/creators/{profileId}/agenda": {
+            "post": {
+                "tags": [
+                    "Agenda"
+                ],
+                "summary": "Ajouter un événement à l'agenda",
+                "description": "Crée un nouvel élément (Live, Sortie, Événement) dans l'agenda du créateur.",
+                "operationId": "be13de2f9ca0cfe8315af0ff23f183a1",
+                "parameters": [
+                    {
+                        "name": "profileId",
+                        "in": "path",
+                        "description": "ID du profil créateur (UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "type",
+                                    "scheduled_at"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Mon Live de lancement",
+                                        "maxLength": 255
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 1000
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "live",
+                                            "release",
+                                            "event"
+                                        ]
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "format": "url",
+                                        "example": "https://wolplay.io/live/123",
+                                        "nullable": true
+                                    },
+                                    "scheduled_at": {
+                                        "description": "Date de l'événement (doit être dans le futur)",
+                                        "type": "string",
+                                        "format": "date-time"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Événement créé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Vidéos récupérées avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Interdit - Vous n'êtes pas le propriétaire de ce profil"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/creators/{profileId}/agenda/{eventId}": {
+            "delete": {
+                "tags": [
+                    "Agenda"
+                ],
+                "summary": "Supprimer un événement",
+                "description": "Supprime définitivement un événement de l'agenda.",
+                "operationId": "3c6b9f28ede93d74abd59abfd34002f3",
+                "parameters": [
+                    {
+                        "name": "profileId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Événement supprimé"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Agenda"
+                ],
+                "summary": "Modifier un événement de l'agenda",
+                "description": "Met à jour les informations d'un événement existant.",
+                "operationId": "2cde00f4ee122db4adb1dcdc2e1991d6",
+                "parameters": [
+                    {
+                        "name": "profileId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 1000
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "live",
+                                            "release",
+                                            "event"
+                                        ]
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "format": "url",
+                                        "nullable": true
+                                    },
+                                    "scheduled_at": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "is_cancelled": {
+                                        "type": "boolean",
+                                        "example": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Événement mis à jour",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Événement mis à jour avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Événement non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/email/verification-notification": {
             "post": {
                 "tags": [
@@ -1283,6 +1520,224 @@
                 }
             }
         },
+        "/api/users/{userId}/videos": {
+            "get": {
+                "tags": [
+                    "Creator Videos"
+                ],
+                "summary": "Récupérer toutes les vidéos d'un créateur spécifique",
+                "description": "Retourne la liste complète des vidéos appartenant à l'utilisateur. Nécessite d'être le propriétaire.",
+                "operationId": "45c1ed7b073bbcb22395af1fcfa65969",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ID de l'utilisateur (UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des vidéos du créateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Vidéos récupérées avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Interdit - Vous n'êtes pas le propriétaire"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{userId}/videos/featured": {
+            "get": {
+                "tags": [
+                    "Creator Videos"
+                ],
+                "summary": "Récupérer les IDs des vidéos mises en vedette",
+                "description": "Retourne les IDs des vidéos sélectionnées pour le profil, triés par emplacement (slot).",
+                "operationId": "2ab544fbd6348bc3e3e69f6f1c067ea1",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tableau d'IDs de vidéos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "IDs récupérés avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Creator Videos"
+                ],
+                "summary": "Mettre à jour la sélection de vidéos en vedette",
+                "description": "Remplace la sélection actuelle par une nouvelle liste (max 6 vidéos). Les vidéos doivent appartenir à l'utilisateur.",
+                "operationId": "c895530dc6bc5a4daa4537933b2c8b27",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "ids": {
+                                        "description": "Liste ordonnée d'IDs de vidéos (max 6)",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "uuid"
+                                        },
+                                        "maxItems": 6
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Sélection mise à jour avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Sélection mise à jour avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation (ex: vidéo n'appartient pas au créateur)"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{userId}/videos/{videoId}": {
+            "delete": {
+                "tags": [
+                    "Creator Videos"
+                ],
+                "summary": "Supprimer une vidéo",
+                "description": "Supprime une vidéo appartenant à l'utilisateur. Cela retire également la vidéo de sa sélection \"En vedette\" si elle y était présente.",
+                "operationId": "2b8ac4e41c52358bd8cb41502f162c15",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ID de l'utilisateur propriétaire (UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "videoId",
+                        "in": "path",
+                        "description": "ID de la vidéo à supprimer (UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Vidéo supprimée avec succès (pas de contenu retourné)"
+                    },
+                    "403": {
+                        "description": "Interdit - Vous n'êtes pas le propriétaire de cette ressource"
+                    },
+                    "404": {
+                        "description": "Vidéo non trouvée ou n'appartient pas à cet utilisateur"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/videos": {
             "get": {
                 "tags": [
@@ -1830,6 +2285,10 @@
     },
     "tags": [
         {
+            "name": "Agenda",
+            "description": "Agenda"
+        },
+        {
             "name": "Auth",
             "description": "Auth"
         },
@@ -1840,6 +2299,10 @@
         {
             "name": "Profile",
             "description": "Profile"
+        },
+        {
+            "name": "Creator Videos",
+            "description": "Creator Videos"
         },
         {
             "name": "Videos",
