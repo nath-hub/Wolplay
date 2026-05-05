@@ -187,11 +187,11 @@ class VideoDisciplinesController extends Controller
             'tags'          => 'nullable|array',
             'tags.*'        => 'string|max:50',
 
-            'sourceId'      => 'required|in:youtube,twitch',
+            'sourceId'      => 'required',
             'youtubeId'     => 'nullable|string',
             'url'           => 'required|url',
 
-            'author_certified' => 'required|accepted',
+            'author_certified' => 'nullable|accepted',
         ]);
 
         $video = DB::transaction(function () use ($validated, $request, $userId) {
