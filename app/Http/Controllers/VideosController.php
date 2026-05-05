@@ -193,7 +193,16 @@ class VideosController extends Controller
             ->inRandomOrder()
             ->first();
 
-        return response()->json($video);
+        return response()->json([
+            'id'         => $video->id,
+            'youtubeId'  => (string) $video->youtube_id,
+            'videoTitle' => (string) $video->title,
+
+            'creator' => [
+                'id'     => $video->creator->id ?? null,
+                'pseudo' => $video->creator->pseudo ?? '',
+            ],
+        ]);
     }
 
     #[OA\Get(

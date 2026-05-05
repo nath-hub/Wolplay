@@ -386,24 +386,31 @@ class EmailVerificationController extends Controller
 
         return response()->json([
             'id' => $user->id,
+
             'userInfos' => [
-                'pseudo' => $user->pseudo,
-                'name'   => $user->name,
-                'avatar' => $user->avatar,
-                'bio'    => $user->bio,
+                'pseudo'    => $user->pseudo ?? '',
+                'firstName' => $user->firstName ?? '',
+                'lastName'  => $user->lastName ?? '',
+                'email'     => $user->email ?? '',
+                'avatar'    => $user->avatar ?? null,
+                'bio'       => $user->bio ?? null,
             ],
-            // Correspond au userSubscriptionSchema
-            'subscription' => $user->subscription ?? [
-                'plan' => 'free',
-                'status' => 'active'
+
+            'subscription' => [
+                'plan'     => $user->subscription->plan ?? 'free',
+                'status'   => $user->subscription->status ?? 'active',
+                'renewsAt' => optional($user->subscription)->renews_at ?? '',
             ],
+
             'rating' => (float) ($user->rating ?? 0),
-            // IDs des personnes suivies
-            'follows' => $user->follows ? $user->follows->pluck('id')->toArray() : [],
-            // Historique formaté selon userVideoHistoryEntrySchema
+
+            'follows' => $user->follows->pluck('id')->toArray(),
+
             'videoHistory' => $user->videoHistory ?? [],
+
             'pinnedVideos' => $user->pinned_videos ?? [],
-            'role' => $user->role ?? 'member', // "member", "creator", etc.
+
+            'role' => $user->role ?? 'member',
         ]);
     }
 }
