@@ -99,7 +99,7 @@ class AgendaController extends Controller
         $request->validate([
             'title'        => 'required|string|max:255',
             'description'  => 'nullable|string|max:1000',
-            'type'         => 'required|in:live,release,event',
+            'type'         => 'nullable|in:live,release,event',
             'url'          => 'nullable|url',
             'scheduled_at' => 'nullable|date|after:now',
         ]);
