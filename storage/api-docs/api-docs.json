@@ -7,6 +7,51 @@
     },
     "paths": {
         "/api/creators/{profileId}/agenda": {
+            "get": {
+                "tags": [
+                    "Agenda"
+                ],
+                "summary": "Récupérer l'agenda public d'un créateur",
+                "description": "Retourne la liste des événements programmés qui ne sont pas annulés, triés par date chronologique.",
+                "operationId": "f9956e4c4a14d3677861debad75aff08",
+                "parameters": [
+                    {
+                        "name": "profileId",
+                        "in": "path",
+                        "description": "ID du profil créateur (UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des événements de l'agenda",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des événements de l'agenda du créateur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Créateur non trouvé"
+                    }
+                }
+            },
             "post": {
                 "tags": [
                     "Agenda"
@@ -85,7 +130,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Vidéos récupérées avec succès"
+                                            "example": "Événement créé avec succès"
                                         }
                                     },
                                     "type": "object"
@@ -99,7 +144,7 @@
                 },
                 "security": [
                     {
-                        "BearerAuth": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -139,7 +184,7 @@
                 },
                 "security": [
                     {
-                        "BearerAuth": []
+                        "bearerAuth": []
                     }
                 ]
             },
@@ -238,7 +283,7 @@
                 },
                 "security": [
                     {
-                        "BearerAuth": []
+                        "bearerAuth": []
                     }
                 ]
             }

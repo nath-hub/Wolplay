@@ -6,12 +6,41 @@ use App\Http\Controllers\Controller;
 use App\Models\AgendaItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use OpenApi\Attributes as OA;
 
 class AgendaController extends Controller
 {
     // ── fetchAgendaEvents ─────────────────────────────────────────────────────
-
+    #[OA\Get(
+        path: '/api/creators/{profileId}/agenda',
+        summary: 'Récupérer l\'agenda public d\'un créateur',
+        description: 'Retourne la liste des événements programmés qui ne sont pas annulés, triés par date chronologique.',
+        tags: ['Agenda'],
+        parameters: [
+            new OA\Parameter(
+                name: 'profileId',
+                in: 'path',
+                description: 'ID du profil créateur (UUID)',
+                required: true,
+                schema: new OA\Schema(type: 'string', format: 'uuid')
+            )
+        ]
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Liste des événements de l\'agenda',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: true),
+                new OA\Property(property: 'message', type: 'string', example: 'Liste des événements de l\'agenda du créateur'),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 404,
+        description: 'Créateur non trouvé'
+    )]
     public function index(string $profileId): JsonResponse
     {
         $items = AgendaItem::where('user_id', $profileId)
@@ -28,7 +57,7 @@ class AgendaController extends Controller
         summary: 'Ajouter un événement à l\'agenda',
         description: 'Crée un nouvel élément (Live, Sortie, Événement) dans l\'agenda du créateur.',
         tags: ['Agenda'],
-        security: [['BearerAuth' => []]],
+        security: [['bearerAuth' => []]],
         parameters: [
             new OA\Parameter(
                 name: 'profileId',
@@ -58,7 +87,7 @@ class AgendaController extends Controller
         content: new OA\JsonContent(
             properties: [
                 new OA\Property(property: 'success', type: 'boolean', example: true),
-                new OA\Property(property: 'message', type: 'string', example: 'Vidéos récupérées avec succès'),
+                new OA\Property(property: 'message', type: 'string', example: 'Événement créé avec succès'),
             ]
         )
     )]
@@ -72,8 +101,12 @@ class AgendaController extends Controller
             'description'  => 'nullable|string|max:1000',
             'type'         => 'required|in:live,release,event',
             'url'          => 'nullable|url',
-            'scheduled_at' => 'required|date|after:now',
+            'scheduled_at' => 'nullable|date|after:now',
         ]);
+
+
+        $scheduledAt = Carbon::parse($request->input('scheduled_at'))
+            ->format('Y-m-d H:i:s');
 
         $item = AgendaItem::create([
             'user_id'      => $profileId,
@@ -81,7 +114,7 @@ class AgendaController extends Controller
             'description'  => $request->input('description'),
             'type'         => $request->input('type'),
             'url'          => $request->input('url'),
-            'scheduled_at' => $request->input('scheduled_at'),
+            'scheduled_at' => $scheduledAt,
         ]);
 
         return response()->json($item, 201);
@@ -93,7 +126,7 @@ class AgendaController extends Controller
         summary: 'Modifier un événement de l\'agenda',
         description: 'Met à jour les informations d\'un événement existant.',
         tags: ['Agenda'],
-        security: [['BearerAuth' => []]],
+        security: [['bearerAuth' => []]],
         parameters: [
             new OA\Parameter(
                 name: 'profileId',
@@ -165,7 +198,7 @@ class AgendaController extends Controller
         summary: 'Supprimer un événement',
         description: 'Supprime définitivement un événement de l\'agenda.',
         tags: ['Agenda'],
-        security: [['BearerAuth' => []]],
+        security: [['bearerAuth' => []]],
         parameters: [
             new OA\Parameter(name: 'profileId', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'uuid')),
             new OA\Parameter(name: 'eventId', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'uuid'))
