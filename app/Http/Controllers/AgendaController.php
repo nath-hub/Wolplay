@@ -54,7 +54,7 @@ class AgendaController extends Controller
                 'title' => $item->title,
 
                 // 🔥 mapping vers le front
-                'date' => $item->scheduled_at?->format('Y-m-d H:i:s'),
+                'date' => $item->scheduled_at,
                 'endDate' => null,
 
                 'imageUrl' => null, // pas dans ta DB
