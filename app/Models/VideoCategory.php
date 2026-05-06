@@ -5,21 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Format extends Model
+class VideoCategory extends Model
 {
-    protected $primaryKey = 'id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    //pour ignorer le timestamps
-    public $timestamps = false;
-
-    /**
+     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $guarded = ['id'];
+
+
     protected static function boot()
     {
         parent::boot();

@@ -20,7 +20,7 @@ class VideoDisciplinesController extends Controller
         summary: 'Récupérer toutes les vidéos d\'un créateur spécifique',
         description: 'Retourne la liste complète des vidéos appartenant à l\'utilisateur. Nécessite d\'être le propriétaire.',
         tags: ['Creator Videos'],
-        security: [['BearerAuth' => []]],
+        security: [['bearerAuth' => []]],
         parameters: [
             new OA\Parameter(
                 name: 'userId',
@@ -77,7 +77,7 @@ class VideoDisciplinesController extends Controller
         summary: 'Récupérer les IDs des vidéos mises en vedette',
         description: 'Retourne les IDs des vidéos sélectionnées pour le profil, triés par emplacement (slot).',
         tags: ['Creator Videos'],
-        security: [['BearerAuth' => []]],
+        security: [['bearerAuth' => []]],
         parameters: [
             new OA\Parameter(
                 name: 'userId',
@@ -126,12 +126,12 @@ class VideoDisciplinesController extends Controller
     // ── addPinnedVideo ────────────────────────────────────────────────────────
     // Ajoute une vidéo au catalogue du créateur via URL YouTube/Twitch
 
-    #[OA\Put(
-        path: '/api/users/{userId}/videos/featured',
-        summary: 'Mettre à jour la sélection de vidéos en vedette',
-        description: 'Remplace la sélection actuelle par une nouvelle liste (max 6 vidéos). Les vidéos doivent appartenir à l\'utilisateur.',
+    #[OA\Post(
+        path: '/api/users/{userId}/videos',
+        summary: 'Ajouter une vidéo au catalogue',
+        description: 'Ajoute une nouvelle vidéo au catalogue du créateur.',
+        security: [['bearerAuth' => []]],
         tags: ['Creator Videos'],
-        security: [['BearerAuth' => []]],
         parameters: [
             new OA\Parameter(
                 name: 'userId',
@@ -280,7 +280,7 @@ class VideoDisciplinesController extends Controller
         summary: 'Supprimer une vidéo',
         description: 'Supprime une vidéo appartenant à l\'utilisateur. Cela retire également la vidéo de sa sélection "En vedette" si elle y était présente.',
         tags: ['Creator Videos'],
-        security: [['BearerAuth' => []]],
+        security: [['bearerAuth' => []]],
         parameters: [
             new OA\Parameter(
                 name: 'userId',

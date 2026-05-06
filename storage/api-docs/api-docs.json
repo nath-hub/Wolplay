@@ -1567,65 +1567,17 @@
                 },
                 "security": [
                     {
-                        "BearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/users/{userId}/videos/featured": {
-            "get": {
-                "tags": [
-                    "Creator Videos"
-                ],
-                "summary": "Récupérer les IDs des vidéos mises en vedette",
-                "description": "Retourne les IDs des vidéos sélectionnées pour le profil, triés par emplacement (slot).",
-                "operationId": "2ab544fbd6348bc3e3e69f6f1c067ea1",
-                "parameters": [
-                    {
-                        "name": "userId",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Tableau d'IDs de vidéos",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "IDs récupérés avec succès"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "BearerAuth": []
+                        "bearerAuth": []
                     }
                 ]
             },
-            "put": {
+            "post": {
                 "tags": [
                     "Creator Videos"
                 ],
-                "summary": "Mettre à jour la sélection de vidéos en vedette",
-                "description": "Remplace la sélection actuelle par une nouvelle liste (max 6 vidéos). Les vidéos doivent appartenir à l'utilisateur.",
-                "operationId": "c895530dc6bc5a4daa4537933b2c8b27",
+                "summary": "Ajouter une vidéo au catalogue",
+                "description": "Ajoute une nouvelle vidéo au catalogue du créateur.",
+                "operationId": "8b86b501226300f9110434fb478f4cfb",
                 "parameters": [
                     {
                         "name": "userId",
@@ -1685,7 +1637,55 @@
                 },
                 "security": [
                     {
-                        "BearerAuth": []
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{userId}/videos/featured": {
+            "get": {
+                "tags": [
+                    "Creator Videos"
+                ],
+                "summary": "Récupérer les IDs des vidéos mises en vedette",
+                "description": "Retourne les IDs des vidéos sélectionnées pour le profil, triés par emplacement (slot).",
+                "operationId": "2ab544fbd6348bc3e3e69f6f1c067ea1",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tableau d'IDs de vidéos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "IDs récupérés avec succès"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -1733,7 +1733,7 @@
                 },
                 "security": [
                     {
-                        "BearerAuth": []
+                        "bearerAuth": []
                     }
                 ]
             }
