@@ -112,7 +112,7 @@ class AgendaController extends Controller
             'user_id'      => $profileId,
             'title'        => $request->input('title'),
             'description'  => $request->input('description'),
-            'type'         => $request->input('type'),
+            'type'         => $request->input('type') ?? 'event',
             'url'          => $request->input('url'),
             'scheduled_at' => $scheduledAt,
         ]);
