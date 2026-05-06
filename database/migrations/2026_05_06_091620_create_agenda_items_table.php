@@ -21,11 +21,11 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
 
-            $table->enum('type', ['live', 'release', 'event']);
+            $table->enum('type', ['live', 'release', 'event'])->default('event');
 
             $table->string('url')->nullable();
 
-            $table->timestamp('scheduled_at');
+            $table->timestamp('scheduled_at')->nullable();
 
             $table->boolean('is_cancelled')->default(false);
 
