@@ -308,9 +308,9 @@ class VideosController extends Controller
         $creators = User::with(['disciplines' => fn($q) => $q->limit(3), 'socialLinks'])
             ->where('plan', 'premium')
             ->where('role', 'creator')
+            ->whereHas('publishedVideos')
             ->withCount('publishedVideos as video_count')
             ->withCount('followers')
-            ->having('video_count', '>', 0)
             ->inRandomOrder()
             ->limit(6)
             ->get();
