@@ -48,7 +48,22 @@ class AgendaController extends Controller
             ->orderBy('scheduled_at')
             ->get();
 
-        return response()->json($items);
+        $formatted = $items->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'title' => $item->title,
+
+                // 🔥 mapping vers le front
+                'date' => $item->scheduled_at?->format('Y-m-d H:i:s'),
+                'endDate' => null,
+
+                'imageUrl' => null, // pas dans ta DB
+                'link' => $item->url,
+            ];
+        });
+
+        return response()->json($formatted);
+
     }
 
     // ── addAgendaEvent ────────────────────────────────────────────────────────
