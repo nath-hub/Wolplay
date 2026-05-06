@@ -63,6 +63,9 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
+Route::get('/creators/{profileId}/agenda', [AgendaController::class, 'index']);
+
+
 Route::middleware('auth:sanctum')->group(function () {
 
     // Follow & Recommandations
@@ -124,6 +127,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/users/{userId}/videos/featured',      [VideoDisciplinesController::class, 'updateFeatured']);
 
     // ── Agenda (gestion propriétaire) ─────────────────────────────────────
+
     // addAgendaEvent
     Route::post('/creators/{profileId}/agenda',               [AgendaController::class, 'store']);
     // updateAgendaEvent
@@ -167,3 +171,4 @@ Route::get('/videos/collection', [VideosController::class, 'collectionVideos']);
 Route::get('/videos/collection/spotlights', [VideosController::class, 'collectionSpotlights']);
 Route::get('/videos/creator/{creatorId}', [VideosController::class, 'creatorVideos']);
 Route::get('/home/collection', [VideosController::class, 'homeCollection']);
+// fetchAgendaEvents

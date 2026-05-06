@@ -733,7 +733,7 @@ export async function fetchFollowers(userId, token) {
   return await res.json();
 }
 
- 
+
 
 
 /**
@@ -1095,4 +1095,31 @@ export async function cancelPremium() {
   }
 
   return res.json();
+}
+
+
+/**
+ * Récupérer les événements d'agenda d'un créateur
+ * @param {string} profileId
+ * @returns {Promise<Array>}
+ */
+export async function fetchAgendaEvents(profileId) {
+  const res = await fetch(`${API_BASE}/creators/${profileId}/agenda`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+
+    if (res.status === 404) throw new Error("creator_not_found");
+
+    throw new Error(
+      errorData.message || "Erreur lors de la récupération de l'agenda"
+    );
+  }
+
+  return res.json(); // retourne un tableau d'événements
 }
