@@ -127,50 +127,114 @@ class VideoDisciplinesController extends Controller
     // Ajoute une vidéo au catalogue du créateur via URL YouTube/Twitch
 
     #[OA\Post(
-        path: '/api/users/{userId}/videos',
+        path: '/api/videos/pinned',
         summary: 'Ajouter une vidéo au catalogue',
         description: 'Ajoute une nouvelle vidéo au catalogue du créateur.',
         security: [['bearerAuth' => []]],
         tags: ['Creator Videos'],
-        parameters: [
-            new OA\Parameter(
-                name: 'userId',
-                in: 'path',
-                required: true,
-                schema: new OA\Schema(type: 'string', format: 'uuid')
-            )
-        ],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
                 properties: [
                     new OA\Property(
-                        property: 'ids',
+                        property: 'userId',
+                        type: 'string',
+                        format: 'uuid',
+                        description: 'ID de l\'utilisateur propriétaire'
+                    ),
+                    new OA\Property(
+                        property: 'title',
+                        type: 'string',
+                        description: 'Titre de la vidéo'
+                    ),
+                    new OA\Property(
+                        property: 'description',
+                        type: 'string',
+                        description: 'Description de la vidéo'
+                    ),
+                    new OA\Property(
+                        property: 'thumbnailUrl',
+                        type: 'string',
+                        format: 'url',
+                        description: 'URL de la miniature'
+                    ),
+                    new OA\Property(
+                        property: 'categories',
                         type: 'array',
-                        description: 'Liste ordonnée d\'IDs de vidéos (max 6)',
-                        maxItems: 6,
-                        items: new OA\Items(type: 'string', format: 'uuid')
+                        items: new OA\Items(type: 'string'),
+                        description: 'Catégories de la vidéo'
+                    ),
+                    new OA\Property(
+                        property: 'formats',
+                        type: 'array',
+                        items: new OA\Items(type: 'string'),
+                        description: 'Formats de la vidéo'
+                    ),
+                    new OA\Property(
+                        property: 'disciplines',
+                        type: 'array',
+                        items: new OA\Items(type: 'string'),
+                        description: 'Disciplines de la vidéo'
+                    ),
+                    new OA\Property(
+                        property: 'tags',
+                        type: 'array',
+                        items: new OA\Items(type: 'string'),
+                        description: 'Tags de la vidéo'
+                    ),
+                    new OA\Property(
+                        property: 'sourceId',
+                        type: 'string',
+                        description: 'ID source de la vidéo'
+                    ),
+                    new OA\Property(
+                        property: 'youtubeId',
+                        type: 'string',
+                        description: 'ID YouTube'
+                    ),
+                    new OA\Property(
+                        property: 'url',
+                        type: 'string',
+                        format: 'url',
+                        description: 'URL de la vidéo'
+                    ),
+                    new OA\Property(
+                        property: 'provider',
+                        type: 'string',
+                        description: 'Plateforme (YouTube, etc.)'
                     )
-                ]
+                ],
+                required: ['userId', 'title', 'categories', 'sourceId', 'url']
             )
         )
     )]
+
     #[OA\Response(
-        response: 200,
-        description: 'Sélection mise à jour avec succès',
+        response: 201,
+        description: 'Vidéo créée avec succès',
         content: new OA\JsonContent(
             properties: [
-                new OA\Property(property: 'success', type: 'boolean', example: true),
-                new OA\Property(property: 'message', type: 'string', example: 'Sélection mise à jour avec succès')
+                new OA\Property(property: 'id', type: 'string', format: 'uuid'),
+                new OA\Property(property: 'title', type: 'string'),
+                new OA\Property(property: 'description', type: 'string'),
+                new OA\Property(property: 'thumbnail_url', type: 'string'),
+                new OA\Property(property: 'embed_url', type: 'string'),
+                new OA\Property(property: 'platform', type: 'string'),
+                new OA\Property(property: 'platform_video_id', type: 'string'),
+                new OA\Property(property: 'status', type: 'string'),
+                new OA\Property(property: 'published_at', type: 'string', format: 'date-time'),
+                new OA\Property(property: 'category', type: 'array', items: new OA\Items(type: 'object')),
+                new OA\Property(property: 'disciplines', type: 'array', items: new OA\Items(type: 'object')),
+                new OA\Property(property: 'tags', type: 'array', items: new OA\Items(type: 'object'))
             ]
         )
     )]
-    #[OA\Response(response: 422, description: 'Erreur de validation (ex: vidéo n\'appartient pas au créateur)')]
-    public function store(Request $request, string $userId): JsonResponse
+    #[OA\Response(response: 403, description: 'Interdit - Vous n\'êtes pas le propriétaire')]
+    #[OA\Response(response: 422, description: 'Erreur de validation')]
+    public function store(Request $request): JsonResponse
     {
-        $this->authorizeOwner($userId);
-
         $validated = $request->validate([
+            'userId'        => 'required|uuid|exists:users,id',
             'title'         => 'required|string|max:255',
             'description'   => 'nullable|string',
             'thumbnailUrl'  => 'nullable|url',
@@ -192,7 +256,12 @@ class VideoDisciplinesController extends Controller
             'url'           => 'required|url',
 
             'author_certified' => 'nullable',
+            'provider'      => 'nullable|string',
         ]);
+
+        $userId = $validated['userId'];
+
+        $this->authorizeOwner($userId);
 
         $video = DB::transaction(function () use ($validated, $request, $userId) {
 

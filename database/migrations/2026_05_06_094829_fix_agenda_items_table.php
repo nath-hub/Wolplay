@@ -14,13 +14,13 @@ return new class extends Migration
         DB::statement("ALTER TABLE agenda_items ALTER COLUMN type DROP DEFAULT");
 
         // 2. Convertir enum → string
-        DB::statement("ALTER TABLE agenda_items ALTER COLUMN type TYPE VARCHAR(255)");
+        DB::statement("ALTER TABLE agenda_items MODIFY COLUMN type VARCHAR(255)");
 
         // 3. Remettre le default
         DB::statement("ALTER TABLE agenda_items ALTER COLUMN type SET DEFAULT 'event'");
 
         // 4. Autoriser null sur scheduled_at (si pas déjà fait)
-        DB::statement("ALTER TABLE agenda_items ALTER COLUMN scheduled_at DROP NOT NULL");
+        DB::statement("ALTER TABLE agenda_items MODIFY COLUMN scheduled_at TIMESTAMP NULL");
     }
 
 

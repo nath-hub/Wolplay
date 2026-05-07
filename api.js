@@ -760,14 +760,14 @@ export async function fetchPinnedVideos(userId, token) {
  * Ajouter une vidéo
  */
 export async function addPinnedVideo(userId, data, token) {
-  const res = await fetch(`${API_BASE}/users/${userId}/videos`, {
+  const res = await fetch(`${API_BASE}/videos/pinned`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Accept": "application/json",
       "Authorization" :`Bearer ${getToken()}`,
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({ userId, ...data }),
   });
 
   if (!res.ok) {

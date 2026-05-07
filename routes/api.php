@@ -118,7 +118,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // fetchPinnedVideos
     Route::get('/users/{userId}/videos',               [VideoDisciplinesController::class, 'index']);
     // addPinnedVideo
-    Route::post('/users/{userId}/videos',              [VideoDisciplinesController::class, 'store']);
+    Route::post('/videos/pinned',              [VideoDisciplinesController::class, 'store']);
     // deletePinnedVideo
     Route::delete('/users/{userId}/videos/{videoId}',  [VideoDisciplinesController::class, 'destroy']);
     // fetchFeaturedVideoIds
