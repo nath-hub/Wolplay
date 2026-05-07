@@ -12,7 +12,7 @@ use OpenApi\Attributes as OA;
 class VideosController extends Controller
 {
     #[OA\Get(
-        path: '/api/videos',
+        path: '/api/videos/feed',
         summary: 'Récupérer le flux de vidéos (Feed)',
         description: 'Retourne une liste de vidéos filtrées par contexte (global, tutoriels, abonnements, etc.).',
         tags: ['Videos'],
@@ -29,7 +29,7 @@ class VideosController extends Controller
                 )
             ),
             new OA\Parameter(
-                name: 'creator_id',
+                name: 'creatorId',
                 in: 'query',
                 description: 'ID du créateur (requis si context=creator)',
                 required: false,
@@ -64,15 +64,17 @@ class VideosController extends Controller
     public function feed(Request $request): JsonResponse
     {
         $request->validate([
-            'context'    => 'sometimes|string|in:global,creator,tutorials,collections,wolplays,following',
-            'creator_id' => 'sometimes|uuid',
-            'limit'      => 'sometimes|integer|min:1|max:50',
-            'offset'     => 'sometimes|integer|min:0',
+            'context'     => 'sometimes|string|in:global,creator,tutorials,collections,wolplays,following',
+            'creatorId'   => 'sometimes|uuid',
+            'creator_id'  => 'sometimes|uuid',
+            'limit'       => 'sometimes|integer|min:1|max:50',
+            'offset'      => 'sometimes|integer|min:0',
         ]);
 
-        $context  = $request->input('context', 'global');
-        $limit    = $request->integer('limit', 20);
-        $offset   = $request->integer('offset', 0);
+        $context   = $request->input('context', 'global');
+        $creatorId = $request->input('creatorId', $request->input('creator_id'));
+        $limit     = $request->integer('limit', 20);
+        $offset    = $request->integer('offset', 0);
 
         $query = Video::with(['creator', 'category', 'disciplines', 'tags'])
             ->published();
@@ -81,7 +83,7 @@ class VideosController extends Controller
             'tutorials'   => $query->byCategory('Tutorials'),
             'collections' => $query->byCategory('Collections'),
             'wolplays'    => $query->byCategory('Wolplays'),
-            'creator'     => $query->where('creator_id', $request->input('creator_id')),
+            'creator'     => $query->where('creator_id', $creatorId),
             'following'   => $query->whereIn('creator_id', function ($sub) use ($request) {
                 $sub->select('followed_id')
                     ->from('follows')

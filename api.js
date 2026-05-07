@@ -251,11 +251,11 @@ export async function fetchVideosFeed({
     const params = new URLSearchParams();
 
     if (context) params.append("context", context);
-    if (creatorId) params.append("creator_id", creatorId);
+    if (creatorId) params.append("creatorId", creatorId);
     if (limit) params.append("limit", limit);
     if (offset) params.append("offset", offset);
 
-    const res = await fetch(`${API_BASE}/videos?${params.toString()}`, {
+    const res = await fetch(`${API_BASE}/videos/feed?${params.toString()}`, {
         method: "GET",
         headers: {
             Accept: "application/json",
@@ -718,6 +718,7 @@ export async function fetchPinnedVideos(userId, token) {
   const res = await fetch(`${API_BASE}/videos/pinned?userId=${encodeURIComponent(userId)}`, {
     headers: {
       "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`, // optionnel
     },
   });
 

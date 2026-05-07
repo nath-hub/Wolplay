@@ -86,6 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //route pour les videos
     Route::get('/videos', [VideosController::class, 'feed']);
+    Route::get('/videos/feed', [VideosController::class, 'feed']);
 
 
 

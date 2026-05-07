@@ -1912,14 +1912,14 @@
                 ]
             }
         },
-        "/api/videos": {
+        "/api/videos/feed": {
             "get": {
                 "tags": [
                     "Videos"
                 ],
                 "summary": "Récupérer le flux de vidéos (Feed)",
                 "description": "Retourne une liste de vidéos filtrées par contexte (global, tutoriels, abonnements, etc.).",
-                "operationId": "98a9bbad1550b0356a0ad4dba29b1de5",
+                "operationId": "472e5f0f8a0e5dc3197c411c4977411e",
                 "parameters": [
                     {
                         "name": "context",
@@ -1940,7 +1940,7 @@
                         }
                     },
                     {
-                        "name": "creator_id",
+                        "name": "creatorId",
                         "in": "query",
                         "description": "ID du créateur (requis si context=creator)",
                         "required": false,
