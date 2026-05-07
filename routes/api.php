@@ -65,6 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::get('/creators/{profileId}/agenda', [AgendaController::class, 'index']);
 
+Route::get('/videos/feed', [VideosController::class, 'feed']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -86,7 +87,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //route pour les videos
     Route::get('/videos', [VideosController::class, 'feed']);
-    Route::get('/videos/feed', [VideosController::class, 'feed']);
+
 
 
 
