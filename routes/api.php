@@ -117,6 +117,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // ── Gestion vidéos propriétaire ───────────────────────────────────────
     // fetchPinnedVideos
     Route::get('/users/{userId}/videos',               [VideoDisciplinesController::class, 'index']);
+    Route::get('/videos/pinned',                       [VideoDisciplinesController::class, 'publicPinned']);
     // addPinnedVideo
     Route::post('/videos/pinned',              [VideoDisciplinesController::class, 'store']);
     // deletePinnedVideo

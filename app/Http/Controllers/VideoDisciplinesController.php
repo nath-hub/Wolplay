@@ -54,6 +54,48 @@ class VideoDisciplinesController extends Controller
         return response()->json($videos);
     }
 
+    // ── fetchPinnedVideos public ───────────────────────────────────────────────
+    // Accessible sans authentification pour consulter les vidéos épinglées d'un profil public
+
+    #[OA\Get(
+        path: '/api/videos/pinned',
+        summary: 'Récupérer les vidéos épinglées d\'un créateur',
+        description: 'Retourne la liste des vidéos épinglées d\'un utilisateur public.',
+        tags: ['Creator Videos'],
+        parameters: [
+            new OA\Parameter(
+                name: 'userId',
+                in: 'query',
+                required: true,
+                description: 'ID de l\'utilisateur propriétaire',
+                schema: new OA\Schema(type: 'string', format: 'uuid')
+            )
+        ]
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Liste des vidéos épinglées',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(
+                type: 'object'
+            )
+        )
+    )]
+    public function publicPinned(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'userId' => 'required|uuid|exists:users,id',
+        ]);
+
+        $videos = Video::with(['category', 'disciplines', 'tags'])
+            ->where('creator_id', $validated['userId'])
+            ->latest('published_at')
+            ->get();
+
+        return response()->json($videos);
+    }
+
     // ── fetchFeaturedVideoIds ─────────────────────────────────────────────────
     // Retourne les IDs ordonnés des 6 slots mis en avant
 

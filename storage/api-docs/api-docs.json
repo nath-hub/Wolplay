@@ -1615,18 +1615,21 @@
                         "bearerAuth": []
                     }
                 ]
-            },
-            "post": {
+            }
+        },
+        "/api/videos/pinned": {
+            "get": {
                 "tags": [
                     "Creator Videos"
                 ],
-                "summary": "Ajouter une vidéo au catalogue",
-                "description": "Ajoute une nouvelle vidéo au catalogue du créateur.",
-                "operationId": "8b86b501226300f9110434fb478f4cfb",
+                "summary": "Récupérer les vidéos épinglées d'un créateur",
+                "description": "Retourne la liste des vidéos épinglées d'un utilisateur public.",
+                "operationId": "aa09cfbd4a8120658e5371bb634df658",
                 "parameters": [
                     {
                         "name": "userId",
-                        "in": "path",
+                        "in": "query",
+                        "description": "ID de l'utilisateur propriétaire",
                         "required": true,
                         "schema": {
                             "type": "string",
@@ -1634,20 +1637,104 @@
                         }
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des vidéos épinglées",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Creator Videos"
+                ],
+                "summary": "Ajouter une vidéo au catalogue",
+                "description": "Ajoute une nouvelle vidéo au catalogue du créateur.",
+                "operationId": "2d531fa70df2e7b1ab5b66aad580a1b6",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
+                                "required": [
+                                    "userId",
+                                    "title",
+                                    "categories",
+                                    "sourceId",
+                                    "url"
+                                ],
                                 "properties": {
-                                    "ids": {
-                                        "description": "Liste ordonnée d'IDs de vidéos (max 6)",
+                                    "userId": {
+                                        "description": "ID de l'utilisateur propriétaire",
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "title": {
+                                        "description": "Titre de la vidéo",
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "description": "Description de la vidéo",
+                                        "type": "string"
+                                    },
+                                    "thumbnailUrl": {
+                                        "description": "URL de la miniature",
+                                        "type": "string",
+                                        "format": "url"
+                                    },
+                                    "categories": {
+                                        "description": "Catégories de la vidéo",
                                         "type": "array",
                                         "items": {
-                                            "type": "string",
-                                            "format": "uuid"
-                                        },
-                                        "maxItems": 6
+                                            "type": "string"
+                                        }
+                                    },
+                                    "formats": {
+                                        "description": "Formats de la vidéo",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "disciplines": {
+                                        "description": "Disciplines de la vidéo",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "tags": {
+                                        "description": "Tags de la vidéo",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "sourceId": {
+                                        "description": "ID source de la vidéo",
+                                        "type": "string"
+                                    },
+                                    "youtubeId": {
+                                        "description": "ID YouTube",
+                                        "type": "string"
+                                    },
+                                    "url": {
+                                        "description": "URL de la vidéo",
+                                        "type": "string",
+                                        "format": "url"
+                                    },
+                                    "provider": {
+                                        "description": "Plateforme (YouTube, etc.)",
+                                        "type": "string"
                                     }
                                 },
                                 "type": "object"
@@ -1656,19 +1743,58 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "Sélection mise à jour avec succès",
+                    "201": {
+                        "description": "Vidéo créée avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
+                                        "id": {
                                             "type": "string",
-                                            "example": "Sélection mise à jour avec succès"
+                                            "format": "uuid"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "thumbnail_url": {
+                                            "type": "string"
+                                        },
+                                        "embed_url": {
+                                            "type": "string"
+                                        },
+                                        "platform": {
+                                            "type": "string"
+                                        },
+                                        "platform_video_id": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "published_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "category": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "disciplines": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "tags": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
                                         }
                                     },
                                     "type": "object"
@@ -1676,8 +1802,11 @@
                             }
                         }
                     },
+                    "403": {
+                        "description": "Interdit - Vous n'êtes pas le propriétaire"
+                    },
                     "422": {
-                        "description": "Erreur de validation (ex: vidéo n'appartient pas au créateur)"
+                        "description": "Erreur de validation"
                     }
                 },
                 "security": [

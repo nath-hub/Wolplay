@@ -460,31 +460,6 @@ export async function fetchWolplaySpotlight() {
     return await res.json();
 }
 
-/**
- * Tutoriels
- */
-export async function fetchTutorialVideos({
-    discipline = null,
-    limit = 20,
-    offset = 0,
-} = {}) {
-    const params = new URLSearchParams();
-
-    if (discipline) params.append("discipline", discipline);
-    if (limit) params.append("limit", limit);
-    if (offset) params.append("offset", offset);
-
-    const res = await fetch(`${API_BASE}/videos/tutorial?${params}`, {
-        headers: { Accept: "application/json" },
-    });
-
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || "Erreur chargement tutoriels");
-    }
-
-    return await res.json();
-}
 
 /**
  * Tutoriels
@@ -740,10 +715,9 @@ export async function fetchFollowers(userId, token) {
  * Vidéos du créateur (pinned)
  */
 export async function fetchPinnedVideos(userId, token) {
-  const res = await fetch(`${API_BASE}/users/${userId}/videos`, {
+  const res = await fetch(`${API_BASE}/videos/pinned?userId=${encodeURIComponent(userId)}`, {
     headers: {
       "Accept": "application/json",
-      "Authorization" :`Bearer ${getToken()}`,
     },
   });
 
