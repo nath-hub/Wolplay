@@ -17,11 +17,11 @@ class VideoResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'brand' => null, // Assuming no brand field
+            'brand' => "", // Assuming no brand field
             'categories' => $this->category->pluck('name')->map(fn($name) => strtolower($name))->toArray(),
-            'collectionCategory' => $this->category->pluck('name')->toArray() ?? null, // Assuming not used
+            'collectionCategory' => $this->category->pluck('name')->toArray() ?? "", // Assuming not used
             'createdAt' => $this->published_at?->toISOString(),
-            'creatorAvatar' => $this->creator->avatar_url ?? null,
+            'creatorAvatar' => $this->creator->avatar_url ?? "",
             'creatorId' => $this->creator_id,
             'creatorPseudo' => $this->creator->pseudo,
             'disciplines' => $this->disciplines->pluck('name')->toArray(),
@@ -33,11 +33,11 @@ class VideoResource extends JsonResource
             'sourceType' => $this->platform,
             'tags' => $this->tags->pluck('label')->toArray(),
             'thumbnailUrl' => $this->embed_url,
-            'twitchClipSlug' => $this->platform === 'twitch' ? $this->platform_video_id : null,
-            'twitchVideoId' => $this->platform === 'twitch' ? $this->platform_video_id : null,
+            'twitchClipSlug' => $this->platform === 'twitch' ? $this->platform_video_id : "",
+            'twitchVideoId' => $this->platform === 'twitch' ? $this->platform_video_id : "",
             'views' => $this->formatViews($this->views ?? 0), // Assuming views field
             'viewsCache' => (string) ($this->views ?? 0),
-            'youtubeId' => $this->platform === 'youtube' ? $this->platform_video_id : null,
+            'youtubeId' => $this->platform === 'youtube' ? $this->platform_video_id : "",
         ];
     }
 
