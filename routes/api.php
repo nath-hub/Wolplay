@@ -161,7 +161,7 @@ Route::get('/videos/collection', [VideosController::class, 'collectionVideos']);
 Route::get('/wolplay/spotlight', [VideosController::class, 'wolplaySpotlight']);
 Route::get('/wolplay/creators', [VideosController::class, 'wolplayVideos']);
 Route::get('/videos/tutorial', [VideosController::class, 'tutorialVideos']);
-Route::get('/videos/{videoId}', [VideosController::class, 'show']);
+Route::get('/all_videos/{videoId}', [VideosController::class, 'show']);
 Route::get('/videos/tutorial/spotlight', [VideosController::class, 'tutorialSpotlight']);
 
 Route::get('/videos/collection/spotlights', [VideosController::class, 'collectionSpotlights']);

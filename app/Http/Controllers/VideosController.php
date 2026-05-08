@@ -573,7 +573,7 @@ class VideosController extends Controller
 
     // ── fetchVideo (détail) ───────────────────────────────────────────────────
     #[OA\Get(
-        path: '/api/videos/{videoId}',
+        path: '/api/all_videos/{videoId}',
         summary: 'Détail d\'une vidéo',
         description: 'Retourne les détails d\'une vidéo spécifique.',
         tags: ['Videos'],
