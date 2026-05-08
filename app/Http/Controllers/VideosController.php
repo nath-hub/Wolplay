@@ -188,7 +188,7 @@ class VideosController extends Controller
             ]
         )
     )]
-    public function featured(Request $request): JsonResponse
+    public function featured(Request $request)
     {
         $video = Video::with(['creator', 'category', 'disciplines'])
             ->published()
@@ -196,14 +196,14 @@ class VideosController extends Controller
             ->inRandomOrder()
             ->first();
 
-                // 🔥 sécurité obligatoire
-    if (!$video) {
-        return response()->json(null, 200);
-    }
+        // 🔥 sécurité obligatoire
+        if (!$video) {
+            return response()->json(null, 200);
+        }
 
         return response()->json([
             'id'         => $video->id,
-            'youtubeId'  => (string) $video->youtube_id ?? '',
+            'youtubeId'  => (string) $video->platform_video_id ?? '',
             'videoTitle' => (string) $video->title ?? '',
 
             'creator' => [

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\VideoResource;
-use App\Models\FeaturedVideo;
 use App\Models\Video;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -140,30 +139,12 @@ class VideoDisciplinesController extends Controller
     {
         $this->authorizeOwner($userId);
 
-        $featuredEntries = FeaturedVideo::with(['video.creator'])
+        $ids = DB::table('featured_videos')
             ->where('user_id', $userId)
             ->orderBy('slot')
-            ->get();
+            ->pluck('video_id');
 
-        $result = $featuredEntries->map(function (FeaturedVideo $entry) {
-            $video = $entry->video;
-
-            if (!$video) {
-                return null;
-            }
-
-            return [
-                'youtubeId' => $video->platform === 'youtube' ? $video->platform_video_id : "null",
-                'videoTitle' => $video->title ?? "titre de la video",
-                'creator' => [
-                    'id' => $video->creator->id ?? "a1b68c2d-5b73-403c-ba16-ac0ab8119a7a",
-                    'pseudo' => $video->creator?->pseudo ?? 'johndoe',
-                    'avatar' => $video->creator?->avatar_url ?? 'https://cdn.wolplay.com/avatars/wolplaynator.webp',
-                ],
-            ];
-        })->filter()->values();
-
-        return response()->json($result);
+        return response()->json($ids);
     }
 
     // ── updateFeaturedVideoIds ────────────────────────────────────────────────
