@@ -323,7 +323,7 @@ class VideosController extends Controller
 
 
     #[OA\Get(
-        path: '/api/wolplay/videos',
+        path: '/api/wolplay/creators',
         summary: 'Vidéos Wolplay',
         description: 'Retourne les vidéos de la catégorie "Wolplays" avec des filtres optionnels.',
         tags: ['Videos'],
@@ -338,7 +338,7 @@ class VideosController extends Controller
             ]
         )
     )]
-    public function wolplayVideos(Request $request): JsonResponse
+    public function wolplayVideos(Request $request)
     {
         $request->validate([
             'discipline' => 'sometimes|string',
@@ -347,7 +347,7 @@ class VideosController extends Controller
             'offset'     => 'sometimes|integer|min:0',
         ]);
 
-        $query = Video::with(['creator', 'disciplines', 'tags', 'formats'])
+        $query = Video::with(['creator', 'disciplines', 'tags', 'formats', 'category'])
             ->published()
             ->byCategory('Wolplays');
 
@@ -391,7 +391,7 @@ class VideosController extends Controller
 
     public function wolplaySpotlight(Request $request): JsonResponse
     {
-        $videos = Video::with(['creator', 'disciplines', 'tags', 'formats'])
+        $videos = Video::with(['creator', 'disciplines', 'tags', 'formats', 'category'])
             ->published()
             ->wolplayPick()
             ->byCategory('Wolplays')
@@ -476,7 +476,7 @@ class VideosController extends Controller
     )]
     public function tutorialSpotlight(): JsonResponse
     {
-        $videos = Video::with(['creator', 'disciplines', 'tags', 'formats'])
+        $videos = Video::with(['creator', 'disciplines', 'tags', 'formats', 'category'])
             ->published()
             ->wolplayPick()
             ->byCategory('Tutorials')
@@ -512,7 +512,7 @@ class VideosController extends Controller
             'offset' => 'sometimes|integer|min:0',
         ]);
 
-        $videos = Video::with(['creator', 'disciplines', 'tags', 'formats'])
+        $videos = Video::with(['creator', 'disciplines', 'tags', 'formats', 'category'])
             ->published()
             ->byCategory('Collections')
             ->latest('published_at')

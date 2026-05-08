@@ -2191,14 +2191,14 @@
                 }
             }
         },
-        "/api/wolplay/videos": {
+        "/api/wolplay/creators": {
             "get": {
                 "tags": [
                     "Videos"
                 ],
                 "summary": "Vidéos Wolplay",
                 "description": "Retourne les vidéos de la catégorie \"Wolplays\" avec des filtres optionnels.",
-                "operationId": "75056ff0a18556116ef82a1f31eb1e5c",
+                "operationId": "3f591907e4e370fe99527021c8a2cc60",
                 "responses": {
                     "200": {
                         "description": "Liste des vidéos Wolplay",

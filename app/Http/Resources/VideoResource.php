@@ -19,7 +19,7 @@ class VideoResource extends JsonResource
             'title' => $this->title,
             'brand' => null, // Assuming no brand field
             'categories' => $this->category->pluck('name')->map(fn($name) => strtolower($name))->toArray(),
-            'collectionCategory' => null, // Assuming not used
+            'collectionCategory' => $this->category->pluck('name')->toArray() ?? null, // Assuming not used
             'createdAt' => $this->published_at?->toISOString(),
             'creatorAvatar' => $this->creator->avatar_url ?? null,
             'creatorId' => $this->creator_id,
@@ -31,8 +31,8 @@ class VideoResource extends JsonResource
             'routeId' => $this->slug ?? $this->id, // Assuming slug field or use id
             'sourceId' => $this->platform_video_id,
             'sourceType' => $this->platform,
-            'tags' => $this->tags->pluck('name')->toArray(),
-            'thumbnailUrl' => $this->thumbnail_url,
+            'tags' => $this->tags->pluck('label')->toArray(),
+            'thumbnailUrl' => $this->embed_url,
             'twitchClipSlug' => $this->platform === 'twitch' ? $this->platform_video_id : null,
             'twitchVideoId' => $this->platform === 'twitch' ? $this->platform_video_id : null,
             'views' => $this->formatViews($this->views ?? 0), // Assuming views field
