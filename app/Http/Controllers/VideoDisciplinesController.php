@@ -89,12 +89,12 @@ class VideoDisciplinesController extends Controller
             'userId' => 'required|uuid|exists:users,id',
         ]);
 
-        $videos = Video::with(['category', 'disciplines', 'tags'])
+        $videos = Video::with(['category', 'disciplines', 'tags', 'formats'])
             ->where('creator_id', $validated['userId'])
             ->latest('published_at')
             ->get();
 
-        return response()->json($videos);
+        return response()->json(VideoResource::collection($videos));
     }
 
     // ── fetchFeaturedVideoIds ─────────────────────────────────────────────────
