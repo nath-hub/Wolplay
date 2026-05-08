@@ -2287,14 +2287,14 @@
                 }
             }
         },
-        "/api/tutorials/spotlight": {
+        "/api/videos/tutorial/spotlight": {
             "get": {
                 "tags": [
                     "Videos"
                 ],
                 "summary": "Vidéos Tutoriels en vedette",
                 "description": "Retourne 4 vidéos Tutoriels sélectionnées aléatoirement.",
-                "operationId": "db1a246d282c8d137249894014e8e323",
+                "operationId": "ea6c81961a5c932346ec482ad8bf44b0",
                 "responses": {
                     "200": {
                         "description": "Liste des vidéos Tutoriels en vedette",

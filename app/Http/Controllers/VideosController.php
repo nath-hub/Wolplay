@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\VideoResource;
 use App\Models\User;
 use App\Models\Video;
 use Illuminate\Http\JsonResponse;
@@ -76,7 +77,7 @@ class VideosController extends Controller
         $limit     = $request->integer('limit', 20);
         $offset    = $request->integer('offset', 0);
 
-        $query = Video::with(['creator', 'category', 'disciplines', 'tags'])
+        $query = Video::with(['creator', 'category', 'disciplines', 'tags', 'formats'])
             ->published();
 
         match ($context) {
@@ -94,7 +95,7 @@ class VideosController extends Controller
 
         $videos = $query->latest('published_at')->skip($offset)->take($limit)->get();
 
-        return response()->json($videos);
+        return response()->json(VideoResource::collection($videos));
     }
 
 
@@ -230,7 +231,7 @@ class VideosController extends Controller
     )]
     public function homeShowcase(): JsonResponse
     {
-        $videos = Video::with(['creator', 'category', 'disciplines'])
+        $videos = Video::with(['creator', 'category', 'disciplines', 'tags', 'formats'])
             ->published()
             ->whereHas('creator', fn($q) => $q->where('plan', 'premium'))
             ->latest('published_at')
@@ -240,7 +241,7 @@ class VideosController extends Controller
         // Compléter avec non-premium si pas assez
         if ($videos->count() < 4) {
             $ids  = $videos->pluck('id');
-            $more = Video::with(['creator', 'category', 'disciplines'])
+            $more = Video::with(['creator', 'category', 'disciplines', 'tags', 'formats'])
                 ->published()
                 ->whereNotIn('id', $ids)
                 ->latest('published_at')
@@ -250,7 +251,7 @@ class VideosController extends Controller
             $videos = $videos->merge($more);
         }
 
-        return response()->json($videos);
+        return response()->json(VideoResource::collection($videos));
     }
 
     #[OA\Get(
@@ -273,7 +274,7 @@ class VideosController extends Controller
     )]
     public function homeCollection(): JsonResponse
     {
-        $videos = Video::with(['creator', 'category'])
+        $videos = Video::with(['creator', 'category', 'disciplines', 'tags', 'formats'])
             ->published()
             ->wolplayPick()
             ->byCategory('Collections')
@@ -281,7 +282,7 @@ class VideosController extends Controller
             ->limit(6)
             ->get();
 
-        return response()->json($videos);
+        return response()->json(VideoResource::collection($videos));
     }
 
 
@@ -307,17 +308,14 @@ class VideosController extends Controller
     )]
     public function homeCreators(): JsonResponse
     {
-        $creators = User::with(['disciplines' => fn($q) => $q->limit(3), 'socialLinks'])
-            ->where('plan', 'premium')
-            ->where('role', 'creator')
-            ->whereHas('publishedVideos')
-            ->withCount('publishedVideos as video_count')
-            ->withCount('followers')
-            ->inRandomOrder()
+        $videos = Video::with(['creator', 'category', 'disciplines'])
+            ->published()
+            ->whereHas('creator', fn($q) => $q->where('plan', 'premium')->where('role', 'creator'))
+            ->latest('published_at')
             ->limit(6)
             ->get();
 
-        return response()->json($creators);
+        return response()->json(VideoResource::collection($videos));
     }
 
 
@@ -349,7 +347,7 @@ class VideosController extends Controller
             'offset'     => 'sometimes|integer|min:0',
         ]);
 
-        $query = Video::with(['creator', 'disciplines', 'tags'])
+        $query = Video::with(['creator', 'disciplines', 'tags', 'formats'])
             ->published()
             ->byCategory('Wolplays');
 
@@ -371,7 +369,7 @@ class VideosController extends Controller
             ->take($request->integer('limit', 20))
             ->get();
 
-        return response()->json($videos);
+        return response()->json(VideoResource::collection($videos));
     }
 
     #[OA\Get(
@@ -393,7 +391,7 @@ class VideosController extends Controller
 
     public function wolplaySpotlight(Request $request): JsonResponse
     {
-        $videos = Video::with(['creator', 'disciplines'])
+        $videos = Video::with(['creator', 'disciplines', 'tags', 'formats'])
             ->published()
             ->wolplayPick()
             ->byCategory('Wolplays')
@@ -401,7 +399,7 @@ class VideosController extends Controller
             ->limit(4)
             ->get();
 
-        return response()->json($videos);
+        return response()->json(VideoResource::collection($videos));
     }
 
 
@@ -436,7 +434,7 @@ class VideosController extends Controller
         $offset = $validated['offset'] ?? 0;
 
         $query = Video::query()
-            ->with(['creator', 'disciplines', 'tags'])
+            ->with(['creator', 'disciplines', 'tags', 'formats'])
             ->published()
             ->byCategory('Tutorials');
 
@@ -454,14 +452,14 @@ class VideosController extends Controller
             ->get();
 
         return response()->json(
-            $videos
+            VideoResource::collection($videos)
         );
     }
 
     // ── fetchTutorialSpotlight ────────────────────────────────────────────────
 
     #[OA\Get(
-        path: '/api/tutorials/spotlight',
+        path: '/api/videos/tutorial/spotlight',
         summary: 'Vidéos Tutoriels en vedette',
         description: 'Retourne 4 vidéos Tutoriels sélectionnées aléatoirement.',
         tags: ['Videos'],
@@ -478,7 +476,7 @@ class VideosController extends Controller
     )]
     public function tutorialSpotlight(): JsonResponse
     {
-        $videos = Video::with(['creator', 'disciplines'])
+        $videos = Video::with(['creator', 'disciplines', 'tags', 'formats'])
             ->published()
             ->wolplayPick()
             ->byCategory('Tutorials')
@@ -486,7 +484,7 @@ class VideosController extends Controller
             ->limit(4)
             ->get();
 
-        return response()->json($videos);
+        return response()->json(VideoResource::collection($videos));
     }
 
     // ── fetchCollectionVideos ─────────────────────────────────────────────────
@@ -514,7 +512,7 @@ class VideosController extends Controller
             'offset' => 'sometimes|integer|min:0',
         ]);
 
-        $videos = Video::with(['creator'])
+        $videos = Video::with(['creator', 'disciplines', 'tags', 'formats'])
             ->published()
             ->byCategory('Collections')
             ->latest('published_at')
@@ -522,7 +520,7 @@ class VideosController extends Controller
             ->take($request->integer('limit', 20))
             ->get();
 
-        return response()->json($videos);
+        return response()->json(VideoResource::collection($videos));
     }
 
     // ── fetchCollectionSpotlights ─────────────────────────────────────────────

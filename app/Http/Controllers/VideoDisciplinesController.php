@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\VideoResource;
 use App\Models\Video;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -46,12 +47,12 @@ class VideoDisciplinesController extends Controller
     {
         $this->authorizeOwner($userId);
 
-        $videos = Video::with(['category', 'disciplines', 'tags'])
+        $videos = Video::with(['category', 'disciplines', 'tags', 'formats'])
             ->where('creator_id', $userId)
             ->latest('published_at')
             ->get();
 
-        return response()->json($videos);
+        return response()->json(VideoResource::collection($videos));
     }
 
     // ── fetchPinnedVideos public ───────────────────────────────────────────────

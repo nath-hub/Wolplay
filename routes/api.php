@@ -92,16 +92,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-
-
-
-
-
-
-
-
-
-
     // ── Recommandations & Follow ──────────────────────────────────────────
     // fetchRecommendedCreators
     Route::get('/creators/recommended',                [CreatorController::class, 'recommended']);
