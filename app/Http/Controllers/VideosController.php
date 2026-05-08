@@ -389,7 +389,7 @@ class VideosController extends Controller
         )
     )]
 
-    public function wolplaySpotlight(Request $request): JsonResponse
+    public function wolplaySpotlight(Request $request)
     {
         $videos = Video::with(['creator', 'disciplines', 'tags', 'formats', 'category'])
             ->published()
