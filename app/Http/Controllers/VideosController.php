@@ -209,6 +209,7 @@ class VideosController extends Controller
             'creator' => [
                 'id'     => $video->creator->id ?? null,
                 'pseudo' => $video->creator->pseudo ?? '',
+                'displayName' => $video->creator->pseudo ?? '',
             ],
         ]);
     }
