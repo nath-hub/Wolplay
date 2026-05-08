@@ -55,7 +55,7 @@ class Video extends Model
     /** Catégorie (Wolplays / Tutorials / Collections) */
     public function category()
     {
-        return $this->belongsToMany(Categorie::class, 'video_categories', 'video_id', 'category_id');
+        return $this->belongsToMany(Categorie::class, 'video_categories', 'video_id', 'categorie_id');
     }
 
     public function formats()

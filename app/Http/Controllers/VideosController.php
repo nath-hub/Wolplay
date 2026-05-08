@@ -495,7 +495,7 @@ class VideosController extends Controller
     // ── fetchCollectionVideos ─────────────────────────────────────────────────
 
     #[OA\Get(
-        path: '/api/collections/videos',
+        path: '/api/videos/collections',
         summary: 'Vidéos Collections',
         description: 'Retourne les vidéos de la catégorie "Collections" avec des filtres optionnels.',
         tags: ['Videos'],

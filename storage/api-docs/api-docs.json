@@ -2450,14 +2450,14 @@
                 }
             }
         },
-        "/api/collections/videos": {
+        "/api/videos/collections": {
             "get": {
                 "tags": [
                     "Videos"
                 ],
                 "summary": "Vidéos Collections",
                 "description": "Retourne les vidéos de la catégorie \"Collections\" avec des filtres optionnels.",
-                "operationId": "d97b9a518c418ed27d5d6146fd8778c4",
+                "operationId": "3db6032608c2b5a0c4175c0d7ed94c43",
                 "responses": {
                     "200": {
                         "description": "Liste des vidéos Collections",
