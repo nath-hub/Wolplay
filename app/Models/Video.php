@@ -23,7 +23,7 @@ class Video extends Model
      */
     protected $guarded = ['id'];
 
-     protected static function boot()
+    protected static function boot()
     {
         parent::boot();
 
@@ -55,7 +55,7 @@ class Video extends Model
     /** Catégorie (Wolplays / Tutorials / Collections) */
     public function category()
     {
-        return $this->belongsToMany(Categorie::class, 'video_categories');
+        return $this->belongsToMany(Categorie::class, 'video_categories', 'video_id', 'category_id');
     }
 
     public function formats()
@@ -122,8 +122,9 @@ class Video extends Model
             return $query; // 👉 pas de filtre si vide
         }
 
+
         return $query->whereHas('category', function ($q) use ($categoryName) {
-            $q->where('name', $categoryName);
+            $q->where('categories.name', $categoryName);
         });
     }
 

@@ -799,24 +799,24 @@ export async function fetchFeaturedVideoIds(userId, token) {
 /**
  * Mettre à jour les vidéos mises en avant
  */
-// export async function updateFeaturedVideoIds(userId, ids, token) {
-//   const res = await fetch(`${API_BASE}/users/${userId}/videos/featured`, {
-//     method: "PUT",
-//     headers: {
-//       "Content-Type": "application/json",
-//       "Accept": "application/json",
-//       "Authorization" :`Bearer ${getToken()}`,
-//     },
-//     body: JSON.stringify({ ids }),
-//   });
+export async function updateFeaturedVideoIds(userId, ids, token) {
+  const res = await fetch(`${API_BASE}/users/${userId}/videos/featured`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "Authorization" :`Bearer ${getToken()}`,
+    },
+    body: JSON.stringify({ ids }),
+  });
 
-//   if (!res.ok) {
-//     const err = await res.json().catch(() => ({}));
-//     throw new Error(err.message || "Erreur update featured");
-//   }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur update featured");
+  }
 
-//   return await res.json(); // retourne ids
-// }
+  return await res.json(); // retourne ids
+}
 
 
 /**
@@ -1130,6 +1130,37 @@ export async function fetchCreatorsList({
         const errorData = await res.json().catch(() => ({}));
         throw new Error(
             errorData.message || "Erreur lors du chargement des créateurs"
+        );
+    }
+
+    return await res.json();
+}
+
+
+export async function fetchCollectionVideos({
+    limit = 20,
+    offset = 0,
+} = {}) {
+    const params = new URLSearchParams();
+
+    if (limit) params.append("limit", limit);
+    if (offset) params.append("offset", offset);
+
+    const res = await fetch(
+        `${API_BASE}/videos/collection?${params.toString()}`,
+        {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+            },
+        }
+    );
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+            errorData.message ||
+                "Erreur lors du chargement des vidéos collections"
         );
     }
 
