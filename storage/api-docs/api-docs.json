@@ -1821,9 +1821,60 @@
                 "tags": [
                     "Creator Videos"
                 ],
-                "summary": "Récupérer les IDs des vidéos mises en vedette",
-                "description": "Retourne les IDs des vidéos sélectionnées pour le profil, triés par emplacement (slot).",
-                "operationId": "2ab544fbd6348bc3e3e69f6f1c067ea1",
+                "summary": "Récupérer les IDs des vidéos mises en avant par le créateur",
+                "description": "Retourne une liste ordonnée d'IDs (UUID) correspondant aux vidéos sélectionnées pour le profil du créateur.",
+                "operationId": "6ad7bd40e2eb6df12ffc99996e759292",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ID de l'utilisateur (UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tableau d'IDs de vidéos récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    }
+                                },
+                                "example": [
+                                    "550e8400-e29b-41d4-a716-446655440000",
+                                    "678e8400-e29b-41d4-a716-446655441111"
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "403": {
+                        "description": "Accès refusé (vous n'êtes pas le propriétaire de ce profil)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Creator Videos"
+                ],
+                "summary": "Mettre à jour les IDs des vidéos mises en vedette",
+                "description": "Remplace les IDs des vidéos sélectionnées pour le profil, triés par emplacement (slot).",
+                "operationId": "0620e3b184e23c93f2b7d4f66aa13115",
                 "parameters": [
                     {
                         "name": "userId",

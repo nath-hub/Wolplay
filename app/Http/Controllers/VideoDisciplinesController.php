@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\VideoResource;
+use App\Models\FeaturedVideo;
 use App\Models\Video;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -99,26 +100,79 @@ class VideoDisciplinesController extends Controller
 
     // ── fetchFeaturedVideoIds ─────────────────────────────────────────────────
     // Retourne les IDs ordonnés des 6 slots mis en avant
-
+    #[OA\Get(
+        path: '/api/users/{userId}/videos/featured',
+        summary: 'Récupérer les IDs des vidéos mises en avant par le créateur',
+        description: 'Retourne une liste ordonnée d\'IDs (UUID) correspondant aux vidéos sélectionnées pour le profil du créateur.',
+        tags: ['Creator Videos'],
+        security: [['bearerAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'userId',
+                in: 'path',
+                description: 'ID de l\'utilisateur (UUID)',
+                required: true,
+                schema: new OA\Schema(type: 'string', format: 'uuid')
+            )
+        ]
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Tableau d\'IDs de vidéos récupéré avec succès',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(type: 'string', format: 'uuid'),
+            example: [
+                "550e8400-e29b-41d4-a716-446655440000",
+                "678e8400-e29b-41d4-a716-446655441111"
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 401,
+        description: 'Non authentifié'
+    )]
+    #[OA\Response(
+        response: 403,
+        description: 'Accès refusé (vous n\'êtes pas le propriétaire de ce profil)'
+    )]
     public function featuredIds(string $userId): JsonResponse
     {
         $this->authorizeOwner($userId);
 
-        $ids = DB::table('featured_videos')
+        $featuredEntries = FeaturedVideo::with(['video.creator'])
             ->where('user_id', $userId)
             ->orderBy('slot')
-            ->pluck('video_id');
+            ->get();
 
-        return response()->json($ids);
+        $result = $featuredEntries->map(function (FeaturedVideo $entry) {
+            $video = $entry->video;
+
+            if (!$video) {
+                return null;
+            }
+
+            return [
+                'youtubeId' => $video->platform === 'youtube' ? $video->platform_video_id : null,
+                'videoTitle' => $video->title,
+                'creator' => [
+                    'id' => $video->creator?->id,
+                    'pseudo' => $video->creator?->pseudo ?? '',
+                    'avatar' => $video->creator?->avatar_url ?? '',
+                ],
+            ];
+        })->filter()->values();
+
+        return response()->json($result);
     }
 
     // ── updateFeaturedVideoIds ────────────────────────────────────────────────
     // Remplace les 6 slots d'un coup (ordre = position dans le tableau)
 
-    #[OA\Get(
+    #[OA\PUT(
         path: '/api/users/{userId}/videos/featured',
-        summary: 'Récupérer les IDs des vidéos mises en vedette',
-        description: 'Retourne les IDs des vidéos sélectionnées pour le profil, triés par emplacement (slot).',
+        summary: 'Mettre à jour les IDs des vidéos mises en vedette',
+        description: 'Remplace les IDs des vidéos sélectionnées pour le profil, triés par emplacement (slot).',
         tags: ['Creator Videos'],
         security: [['bearerAuth' => []]],
         parameters: [
