@@ -395,7 +395,11 @@ class VideoDisciplinesController extends Controller
                     )->id;
                 });
 
+                // 1. Lier à la vidéo
                 $video->disciplines()->sync($disciplineIds);
+
+                // 2. Lier aussi au user (creator)
+                $video->creator->disciplines()->syncWithoutDetaching($disciplineIds);
             }
 
             // =========================

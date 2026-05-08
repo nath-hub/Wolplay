@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CreatorResource;
 use App\Http\Resources\VideoResource;
 use App\Models\User;
 use App\Models\Video;
@@ -307,16 +308,19 @@ class VideosController extends Controller
 
         )
     )]
-    public function homeCreators(): JsonResponse
+    public function homeCreators()
     {
-        $videos = Video::with(['creator', 'category', 'disciplines'])
-            ->published()
-            ->whereHas('creator', fn($q) => $q->where('plan', 'premium')->where('role', 'creator'))
-            ->latest('published_at')
+      return  $creators = User::with(['disciplines'])
+            ->withCount('publishedVideos as video_count')
+            ->withCount('followers')
+            ->where('plan', 'free')
+            ->where('role', 'creator')
+            ->whereHas('publishedVideos')
+            ->inRandomOrder()
             ->limit(6)
             ->get();
 
-        return response()->json(VideoResource::collection($videos));
+        return response()->json(CreatorResource::collection($creators));
     }
 
 

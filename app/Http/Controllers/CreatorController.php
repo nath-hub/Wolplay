@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CreatorResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -59,7 +60,7 @@ class CreatorController extends Controller
             ->take($request->integer('limit', 30))
             ->get();
 
-        return response()->json($creators);
+        return response()->json(CreatorResource::collection($creators));
     }
 
     // ── fetchCreatorProfile ───────────────────────────────────────────────────
@@ -123,6 +124,6 @@ class CreatorController extends Controller
             ->limit($limit)
             ->get();
 
-        return response()->json($creators);
+        return response()->json(CreatorResource::collection($creators));
     }
 }

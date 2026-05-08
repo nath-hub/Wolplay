@@ -95,6 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // ── Recommandations & Follow ──────────────────────────────────────────
     // fetchRecommendedCreators
     Route::get('/creators/recommended',                [CreatorController::class, 'recommended']);
+    Route::get('/creators',                [CreatorController::class, 'index']);
     // // followCreator
     // Route::post('/creators/{creatorId}/follow',        [FollowController::class, 'follow']);
     // // unfollowCreator
