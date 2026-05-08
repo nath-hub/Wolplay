@@ -7,12 +7,65 @@ use App\Http\Resources\CreatorResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class CreatorController extends Controller
 {
     // ── fetchCreatorsList ─────────────────────────────────────────────────────
     // Grille /creators — uniquement les créateurs avec videoCount > 0
+#[OA\Get(
+        path: '/api/creators',
+        summary: 'Lister les créateurs (Annuaire)',
+        description: 'Récupère la liste des créateurs actifs ayant au moins une vidéo publiée. Gère les filtres par discipline, la recherche textuelle et différents modes de tri.',
+        tags: ['Creators'],
+         security: [['bearerAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'discipline',
+                in: 'query',
+                description: 'Filtrer par le slug d\'une discipline (ex: painting, sculpture)',
+                required: false,
+                schema: new OA\Schema(type: 'string')
+            ),
+            new OA\Parameter(
+                name: 'search',
+                in: 'query',
+                description: 'Recherche par pseudo (partiel)',
+                required: false,
+                schema: new OA\Schema(type: 'string', maxLength: 100)
+            ),
+            new OA\Parameter(
+                name: 'sort',
+                in: 'query',
+                description: 'Mode de tri des résultats',
+                required: false,
+                schema: new OA\Schema(
+                    type: 'string',
+                    enum: ['recent', 'level', 'videos', 'new'],
+                    default: 'recent'
+                )
+            ),
+            new OA\Parameter(
+                name: 'limit',
+                in: 'query',
+                description: 'Nombre de résultats (max 100)',
+                required: false,
+                schema: new OA\Schema(type: 'integer', minimum: 1, maximum: 100, default: 30)
+            ),
+            new OA\Parameter(
+                name: 'offset',
+                in: 'query',
+                description: 'Décalage pour la pagination',
+                required: false,
+                schema: new OA\Schema(type: 'integer', minimum: 0, default: 0)
+            )
+        ]
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Liste des créateurs récupérée avec succès',
 
+    )]
     public function index(Request $request): JsonResponse
     {
         $request->validate([
@@ -31,7 +84,8 @@ class CreatorController extends Controller
             ->withCount('followers')
             ->where('role', 'creator')
             ->where('is_banned', false)
-            ->having('video_count', '>', 0);
+            ->whereHas('publishedVideos');
+            // ->having('video_count', '>', 0);
 
         // Filtre par discipline
         if ($request->filled('discipline')) {

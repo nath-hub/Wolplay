@@ -1098,3 +1098,40 @@ export async function fetchAgendaEvents(profileId) {
 
   return res.json(); // retourne un tableau d'événements
 }
+
+
+export async function fetchCreatorsList({
+    discipline = "",
+    search = "",
+    sort = "recent",
+    limit = 30,
+    offset = 0,
+} = {}) {
+    const params = new URLSearchParams();
+
+    if (discipline) params.append("discipline", discipline);
+    if (search) params.append("search", search);
+    if (sort) params.append("sort", sort);
+    if (limit) params.append("limit", limit);
+    if (offset) params.append("offset", offset);
+
+    const res = await fetch(
+        `${API_BASE}/creators?${params.toString()}`,
+        {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+                "Authorization": `Bearer ${getToken()}`,
+            },
+        }
+    );
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+            errorData.message || "Erreur lors du chargement des créateurs"
+        );
+    }
+
+    return await res.json();
+}

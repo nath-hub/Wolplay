@@ -1565,6 +1565,86 @@
                 }
             }
         },
+        "/api/creators": {
+            "get": {
+                "tags": [
+                    "Creators"
+                ],
+                "summary": "Lister les créateurs (Annuaire)",
+                "description": "Récupère la liste des créateurs actifs ayant au moins une vidéo publiée. Gère les filtres par discipline, la recherche textuelle et différents modes de tri.",
+                "operationId": "753a0278e0284c75ccb713234ebe31cc",
+                "parameters": [
+                    {
+                        "name": "discipline",
+                        "in": "query",
+                        "description": "Filtrer par le slug d'une discipline (ex: painting, sculpture)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Recherche par pseudo (partiel)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 100
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Mode de tri des résultats",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "recent",
+                            "enum": [
+                                "recent",
+                                "level",
+                                "videos",
+                                "new"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Nombre de résultats (max 100)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 30,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "Décalage pour la pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 0,
+                            "minimum": 0
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des créateurs récupérée avec succès"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/users/{userId}/videos": {
             "get": {
                 "tags": [
@@ -2524,6 +2604,10 @@
         {
             "name": "Profile",
             "description": "Profile"
+        },
+        {
+            "name": "Creators",
+            "description": "Creators"
         },
         {
             "name": "Creator Videos",

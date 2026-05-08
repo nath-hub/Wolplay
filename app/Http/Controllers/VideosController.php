@@ -310,7 +310,7 @@ class VideosController extends Controller
     )]
     public function homeCreators()
     {
-      return  $creators = User::with(['disciplines'])
+        $creators = User::with(['disciplines'])
             ->withCount('publishedVideos as video_count')
             ->withCount('followers')
             ->where('plan', 'free')
