@@ -318,6 +318,8 @@ class VideoDisciplinesController extends Controller
                 'description'       => $request->input('description'),
                 'thumbnail_url'     => $request->input('thumbnail_url'),
                 'author_certified'  => true,
+                'is_wolplay_pick'  => true,
+                'is_featured'      => true,
                 'status'            => 'published',
                 'published_at'      => now(),
             ]);

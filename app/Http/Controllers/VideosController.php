@@ -393,7 +393,7 @@ class VideosController extends Controller
     {
         $videos = Video::with(['creator', 'disciplines', 'tags', 'formats', 'category'])
             ->published()
-            ->wolplayPick()
+            // ->wolplayPick()
             ->byCategory('Wolplays')
             ->inRandomOrder()
             ->limit(4)
