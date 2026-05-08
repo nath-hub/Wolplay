@@ -55,9 +55,9 @@ class AgendaController extends Controller
 
                 // 🔥 mapping vers le front
                 'date' => $item->scheduled_at,
-                'endDate' => null,
+                'endDate' => $item->end_date,
 
-                'imageUrl' => null, // pas dans ta DB
+                'imageUrl' => $item->image_url, // pas dans ta DB
                 'link' => $item->url,
             ];
         });
@@ -115,21 +115,27 @@ class AgendaController extends Controller
             'title'        => 'required|string|max:255',
             'description'  => 'nullable|string|max:1000',
             'type'         => 'nullable|in:live,release,event',
-            'url'          => 'nullable|url',
-            'scheduled_at' => 'nullable|date|after:now',
+            'link'          => 'nullable|url',
+            'date' => 'nullable|date|after:now',
+            'endDate'     => 'nullable|date|after:scheduled_at',
+            'imageUrl'   => 'nullable|url',
         ]);
 
 
-        $scheduledAt = Carbon::parse($request->input('scheduled_at'))
+        $scheduledAt = Carbon::parse($request->input('date'))
             ->format('Y-m-d H:i:s');
+
+        $endate  = $request->input('endDate') ? Carbon::parse($request->input('endDate'))->format('Y-m-d H:i:s') : null;
 
         $item = AgendaItem::create([
             'user_id'      => $profileId,
             'title'        => $request->input('title'),
-            'description'  => $request->input('description'),
+            'description'  => $request->input('description') ?? '',
             'type'         => $request->input('type') ?? 'event',
-            'url'          => $request->input('url'),
+            'url'          => $request->input('link'),
             'scheduled_at' => $scheduledAt,
+            'end_date'     => $endate,
+            'image_url'    => $request->input('imageUrl'),
         ]);
 
         return response()->json($item, 201);

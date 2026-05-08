@@ -2514,14 +2514,14 @@
                 }
             }
         },
-        "/api/videos/{videoId}": {
+        "/api/all_videos/{videoId}": {
             "get": {
                 "tags": [
                     "Videos"
                 ],
                 "summary": "Détail d'une vidéo",
                 "description": "Retourne les détails d'une vidéo spécifique.",
-                "operationId": "788b9d251ebc95739df7be69c92e8412",
+                "operationId": "f91cedd11a6ba03d1e602c31def3c83f",
                 "responses": {
                     "200": {
                         "description": "Détails de la vidéo",
