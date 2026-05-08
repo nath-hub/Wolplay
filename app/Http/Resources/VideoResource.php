@@ -19,9 +19,7 @@ class VideoResource extends JsonResource
             'title' => $this->title,
             'brand' => "", // Assuming no brand field
             'categories' => $this->category->pluck('name')->map(fn($name) => strtolower($name))->toArray(),
-            'collectionCategory' =>  is_array($this->category)
-                ? ($this->category[0] ?? '')
-                : $this->category,
+            'collectionCategory' => $this->category->first()?->name ?? '',
             'createdAt' => $this->published_at?->toISOString(),
             'creatorAvatar' => $this->creator->avatar_url ?? "",
             'creatorId' => $this->creator_id,

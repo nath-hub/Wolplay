@@ -153,12 +153,12 @@ class VideoDisciplinesController extends Controller
             }
 
             return [
-                'youtubeId' => $video->platform === 'youtube' ? $video->platform_video_id : null,
-                'videoTitle' => $video->title,
+                'youtubeId' => $video->platform === 'youtube' ? $video->platform_video_id : "null",
+                'videoTitle' => $video->title ?? "titre de la video",
                 'creator' => [
-                    'id' => $video->creator?->id,
-                    'pseudo' => $video->creator?->pseudo ?? '',
-                    'avatar' => $video->creator?->avatar_url ?? '',
+                    'id' => $video->creator->id ?? "a1b68c2d-5b73-403c-ba16-ac0ab8119a7a",
+                    'pseudo' => $video->creator?->pseudo ?? 'johndoe',
+                    'avatar' => $video->creator?->avatar_url ?? 'https://cdn.wolplay.com/avatars/wolplaynator.webp',
                 ],
             ];
         })->filter()->values();
