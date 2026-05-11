@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Error;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -72,16 +74,20 @@ class LoginController extends Controller
             'password' => $request->password,
         ];
 
+        // Recherche insensible à la casse
+        $user = User::whereRaw(
+            "LOWER($field) = ?",
+            [Str::lower($request->identifier)]
+        )->first();
+
         // 1. Tentative de connexion
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey($request));
 
-            return response()->json([
-                'success' => false,
-                'status' => 400,
-                'message' => 'Identifiants invalides.',
-            ], 400);
+            throw new Error("Identifiant ou mot de passe incorrect");
         }
+
+
 
         $user = Auth::user();
 
