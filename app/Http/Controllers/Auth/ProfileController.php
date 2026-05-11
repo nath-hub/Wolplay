@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use OpenApi\Attributes as OA;
@@ -161,18 +162,33 @@ class ProfileController extends Controller
     )]
     public function updatePassword(Request $request)
     {
-        $request->validate([
+        // 1. Validation avec messages personnalisés
+        $validator = Validator::make($request->all(), [
             'currentPassword' => ['required', 'current_password'],
-            'newPassword'         => ['required'],
+            'newPassword'     => ['required', 'string', 'min:8'], // Sécurité minimale conseillée
+        ], [
+            // Ce message sera envoyé si 'current_password' échoue
+            'currentPassword.current_password' => 'invalid_current_password',
         ]);
 
-        Auth::user()->update([
+        // 2. Si la validation échoue, on retourne une erreur 422 (Unprocessable Entity)
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first('currentPassword'),
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        // 3. Mise à jour du mot de passe
+        $user = Auth::user();
+        $user->update([
             'password' => Hash::make($request->newPassword),
         ]);
 
         return response()->json([
             'success' => true,
-            'status' => 200,
+            'status'  => 200,
             'message' => 'Mot de passe mis à jour avec succès.',
         ]);
     }
@@ -416,8 +432,21 @@ class ProfileController extends Controller
             'pseudo' => ['required', 'string', 'max:255']
         ]);
 
-        $user = User::where('pseudo', $request->pseudo)->exists();
-        return response()->json(!$user, 200);
+        $pseudo = $request->pseudo;
+
+        // 1. Liste des pseudos réservés (en minuscules pour la comparaison)
+        $reservedPseudos = ['admin', 'wolplay', 'moderateur', 'support', 'webmaster'];
+
+        if (in_array(strtolower($pseudo), $reservedPseudos)) {
+            return response()->json(false, 200);
+        }
+
+        // 2. Vérification en base de données (Insensible à la casse)
+        // 'whereRaw' avec 'LOWER' garantit la précision quel que soit le collationnement de la DB
+        $exists = User::whereRaw('LOWER(pseudo) = ?', [strtolower($pseudo)])->exists();
+
+        // Retourne true si disponible (!exists), false si déjà pris
+        return response()->json(!$exists, 200);
     }
 
 
@@ -455,8 +484,12 @@ class ProfileController extends Controller
             'email' => ['required', 'email', 'max:255']
         ]);
 
-        $user = User::where('email', $request->email)->exists();
+        // On passe tout en minuscules pour la comparaison
+        $email = strtolower($request->email);
 
-        return response()->json(!$user, 200);
+        // Vérification insensible à la casse en base de données
+        $exists = User::whereRaw('LOWER(email) = ?', [$email])->exists();
+
+        return response()->json(!$exists, 200);
     }
 }

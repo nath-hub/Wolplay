@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
@@ -172,36 +173,39 @@ class EmailVerificationController extends Controller
     )]
     public function updateEmail(Request $request)
     {
+        // 1. Validation de l'entrée
         $request->validate([
-            'userId' => 'required|exists:users,id',
-            'newEmail' => 'required|email',
-            'password' => 'required'
+            'newEmail' => ['required', 'email', 'max:255'],
+            'password' => ['required']
         ]);
 
-        $user = $request->user();
+        $user = $request->user(); // Identifié via le token
 
-        $user = User::findOrFail($request->userId);
-
-        // Vérifier mot de passe
+        // 2. Vérifier le mot de passe (si faux -> message pour api.js)
         if (!Hash::check($request->password, $user->password)) {
             return response()->json([
                 'message' => 'invalid_password'
-            ], 400);
+            ], 422);
         }
 
-        // Vérifier si email déjà utilisé
-        if (User::where('email', $request->newEmail)->exists()) {
+        // 3. Vérifier si l'email est déjà pris (Insensible à la casse)
+        $emailExists = User::whereRaw('LOWER(email) = ?', [strtolower($request->newEmail)])
+            ->where('id', '!=', $user->id)
+            ->exists();
+
+        if ($emailExists) {
             return response()->json([
                 'message' => 'email_already_used'
-            ], 400);
+            ], 422);
         }
 
-        // Stocker email temporaire
-        $user->pending_email = $request->newEmail;
-        $user->email_change_expires_at = now()->addMinutes(60);
-        $user->save();
+        // 4. Stocker les données temporaires
+        $user->update([
+            'pending_email' => $request->newEmail,
+            'email_change_expires_at' => now()->addMinutes(60),
+        ]);
 
-        // Générer lien signé
+        // 5. Générer le lien signé
         $url = URL::temporarySignedRoute(
             'confirm.email.change',
             now()->addMinutes(60),
@@ -211,12 +215,12 @@ class EmailVerificationController extends Controller
             ]
         );
 
-        // Envoyer mail
+        // 6. Envoyer le mail
         Mail::to($request->newEmail)->send(new ChangeEmailMail($url));
 
         return response()->json([
             'pending' => true
-        ]);
+        ], 200);
     }
 
 
@@ -373,6 +377,13 @@ class EmailVerificationController extends Controller
         //get le user authentifier avec la subscription et les follows pour le feed
         $user = User::with('subscriptions')
             ->find(auth()->id());
+
+        //si le token est absent, on repond par 401
+        if (!auth()->check()) {
+            return response()->json([
+                'message' => 'Unauthenticated.'
+            ], 401);
+        }
 
         if (!$user) {
             return response()->json(null, 200);

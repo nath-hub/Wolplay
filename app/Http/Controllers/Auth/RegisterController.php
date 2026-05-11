@@ -9,7 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 
 class RegisterController extends Controller
@@ -54,35 +55,111 @@ class RegisterController extends Controller
     )]
     public function store(Request $request)
     {
-        $request->validate([
-            'pseudo'   => [
+
+        $reservedPseudos = [
+            'admin',
+            'support',
+            'wolplay',
+            'api',
+            'root',
+            'system',
+        ];
+
+        $validator = Validator::make($request->all(), [
+
+            'pseudo' => [
                 'required',
                 'string',
                 'min:3',
                 'max:30',
-                'unique:users,pseudo',
                 'regex:/^[a-zA-Z0-9_.-]+$/',
             ],
+
             'firstName' => ['nullable', 'string', 'max:255'],
+
             'lastName' => ['nullable', 'string', 'max:255'],
-            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required'],
+
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+            ],
+
+            'password' => ['required', 'string', 'min:8'],
+
         ], [
-            'pseudo.regex' => 'Le pseudo ne peut contenir que des lettres, chiffres, tirets, points et underscores.',
+            'pseudo.regex' =>
+            'Le pseudo ne peut contenir que des lettres, chiffres, tirets, points et underscores.',
         ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'status' => 422,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $pseudo = Str::lower($request->pseudo);
+        $email = Str::lower($request->email);
+
+        // Vérification pseudo réservé
+        if (in_array($pseudo, $reservedPseudos)) {
+
+            return response()->json([
+                'success' => false,
+                'status' => 422,
+                'message' => 'Pseudo réservé',
+            ], 422);
+        }
+
+        // Vérification pseudo existant (insensible à la casse)
+        $pseudoExists = User::whereRaw(
+            'LOWER(pseudo) = ?',
+            [$pseudo]
+        )->exists();
+
+        if ($pseudoExists) {
+
+            return response()->json([
+                'success' => false,
+                'status' => 422,
+                'message' => 'Pseudo deja utilise',
+            ], 422);
+        }
+
+        // Vérification email existant (insensible à la casse)
+        $emailExists = User::whereRaw(
+            'LOWER(email) = ?',
+            [$email]
+        )->exists();
+
+        if ($emailExists) {
+
+            return response()->json([
+                'success' => false,
+                'status' => 422,
+                'message' => 'Email deja utilise',
+            ], 422);
+        }
+
+        // Création utilisateur
         $user = User::create([
-            'pseudo'     => $request->pseudo,
-            'email'      => $request->email,
-            'password'   => Hash::make($request->password),
-            'firstName'  => $request->firstName ?? "",
-            'lastName'   => $request->lastName ?? "",
+            'pseudo' => $request->pseudo,
+            'email' => $email,
+            'password' => Hash::make($request->password),
+            'firstName' => $request->firstName ?? '',
+            'lastName' => $request->lastName ?? '',
         ]);
 
-        $stat = event(new Registered($user));
-        Log::info('Nouvelle inscription : ' . $user->pseudo, ['user_id' => $user->id, 'event_status' => $stat]);
+        event(new Registered($user));
 
-        Auth::login($user);
+        Log::info('Nouvelle inscription : ' . $user->pseudo, [
+            'user_id' => $user->id,
+        ]);
+
+        // ❌ PAS de Auth::login($user)
 
         return response()->json([
             'success' => true,

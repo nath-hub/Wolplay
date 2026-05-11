@@ -29,7 +29,7 @@ export async function login(identifier, password) {
  * @returns {Promise<Object>}
  */
 export async function getUserMainData(userId) {
-    const res = await fetch(`${API_BASE}/users/${userId}`, {
+    const res = await fetch(`${API_BASE}/me`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -207,7 +207,7 @@ export async function fetchPublicProfileByPseudo(pseudo) {
  * @returns {Promise<Object|null>}
  */
 export async function fetchUserById(userId) {
-    const res = await fetch(`${API_BASE}/me`, {
+    const res = await fetch(`${API_BASE}/users/${userId}`, {
         method: "GET",
         headers: {
             Accept: "application/json",
