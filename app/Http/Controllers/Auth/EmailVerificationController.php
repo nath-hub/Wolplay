@@ -304,19 +304,11 @@ class EmailVerificationController extends Controller
     }
 
     #[OA\Get(
-        path: '/api/users/{id}',
+        path: '/api/me/',
         summary: 'Récupérer les données complètes de l\'utilisateur (MainData)',
         description: 'Retourne une structure compatible avec userMainDataSchema pour l\'initialisation du front.',
         tags: ['Users'],
-        parameters: [
-            new OA\Parameter(
-                name: 'id',
-                in: 'path',
-                description: 'ID de l\'utilisateur',
-                required: true,
-                schema: new OA\Schema(type: 'string', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000')
-            )
-        ]
+        security: [['bearerAuth' => []]],
     )]
     #[OA\Response(
         response: 200,
@@ -376,9 +368,11 @@ class EmailVerificationController extends Controller
             ]
         )
     )]
-    public function getById($id)
+    public function getById()
     {
-        $user = User::with(['subscriptions'])->find($id); //ajouter les relations , 'follows', 'videoHistory'
+        //get le user authentifier avec la subscription et les follows pour le feed
+        $user = User::with('subscriptions')
+            ->find(auth()->id());
 
         if (!$user) {
             return response()->json(null, 200);

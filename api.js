@@ -207,7 +207,7 @@ export async function fetchPublicProfileByPseudo(pseudo) {
  * @returns {Promise<Object|null>}
  */
 export async function fetchUserById(userId) {
-    const res = await fetch(`${API_BASE}/users/${userId}`, {
+    const res = await fetch(`${API_BASE}/me`, {
         method: "GET",
         headers: {
             Accept: "application/json",

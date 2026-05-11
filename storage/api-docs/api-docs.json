@@ -491,27 +491,14 @@
                 }
             }
         },
-        "/api/users/{id}": {
+        "/api/me/": {
             "get": {
                 "tags": [
                     "Users"
                 ],
                 "summary": "Récupérer les données complètes de l'utilisateur (MainData)",
                 "description": "Retourne une structure compatible avec userMainDataSchema pour l'initialisation du front.",
-                "operationId": "611aa6680919be65e83f9964496fb8c7",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de l'utilisateur",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid",
-                            "example": "123e4567-e89b-12d3-a456-426614174000"
-                        }
-                    }
-                ],
+                "operationId": "2f69b3e0e30093c8b71c3ef2d901bdfa",
                 "responses": {
                     "200": {
                         "description": "Données utilisateur ou null",
@@ -618,7 +605,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/login": {

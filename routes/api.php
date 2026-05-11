@@ -35,11 +35,11 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/public/profile/{pseudo}', [EmailVerificationController::class, 'getByPseudo']);
 
-    Route::get('/users/{id}', [EmailVerificationController::class, 'getById'])->name('profile.show-by-id');
+
 });
 // ── Authenticated routes ───────────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
-
+ Route::get('/me', [EmailVerificationController::class, 'getById'])->name('profile.show-by-id');
     // Déconnexion
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
