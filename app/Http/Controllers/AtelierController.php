@@ -163,7 +163,7 @@ class AtelierController extends Controller
             'createdAt'       => $post->created_at->toIso8601String(),
             'updatedAt'       => $post->updated_at?->toIso8601String(),
             'type'            => $post->type ?? "shared_etabli",
-            'sourceSnapshot'  => $post->source_snapshot ?? [],
+            'sourceSnapshot'  => $post->source_snapshot ? $post->source_snapshot : (object)[],
             'author'          => [
                 'id'     => $post->author->id,
                 'pseudo' => $post->author->pseudo,
