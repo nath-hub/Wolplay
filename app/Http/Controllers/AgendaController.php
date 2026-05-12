@@ -125,7 +125,7 @@ class AgendaController extends Controller
 
         $endate  = $request->input('endDate') ? Carbon::parse($request->input('endDate'))->format('Y-m-d H:i:s') : null;
 
-          AgendaItem::create([
+        AgendaItem::create([
             'user_id'      => $profileId,
             'title'        => $request->input('title'),
             'description'  => $request->input('description') ?? '',
@@ -208,7 +208,19 @@ class AgendaController extends Controller
             'is_cancelled',
         ]));
 
-        return response()->json($item);
+        // Dans ton contrôleur
+        return response()->json([
+            'id' => $item->id,
+            'title' => $item->title,
+            'description' => $item->description,
+            'type' => $item->type,
+            // On mappe les noms de la DB vers les noms attendus par le Front
+            'date' => $item->scheduled_at->toIso8601String(),
+            'endDate' => $item->end_date ? $item->end_date->toIso8601String() : null,
+            'link' => $item->url,
+            'imageUrl' => $item->image_url,
+        ], 201);
+
     }
 
     // ── deleteAgendaEvent ─────────────────────────────────────────────────────
