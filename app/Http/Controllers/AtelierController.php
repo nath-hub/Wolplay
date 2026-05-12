@@ -14,8 +14,9 @@ class AtelierController extends Controller
      */
     public function feed(Request $request)
     {
-        $limit = $request->query('limit', 10);
-        $offset = $request->query('offset', 0);
+        // Utilise (int) pour convertir explicitement
+        $offset = (int) $request->query('offset', 0);
+        $limit = (int) $request->query('limit', 10);
 
         $query = Post::with('author:id,pseudo,avatar')
             ->where('status', 'published')
