@@ -125,7 +125,7 @@ class AgendaController extends Controller
 
         $endate  = $request->input('endDate') ? Carbon::parse($request->input('endDate'))->format('Y-m-d H:i:s') : null;
 
-        $item = AgendaItem::create([
+          AgendaItem::create([
             'user_id'      => $profileId,
             'title'        => $request->input('title'),
             'description'  => $request->input('description') ?? '',
@@ -136,7 +136,7 @@ class AgendaController extends Controller
             'image_url'    => $request->input('imageUrl'),
         ]);
 
-        return response()->json($item, 201);
+        return response()->json('L\'AgendaEvent créé', 201);
     }
 
     // ── updateAgendaEvent ─────────────────────────────────────────────────────
