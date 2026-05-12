@@ -215,12 +215,11 @@ class AgendaController extends Controller
             'description' => $item->description,
             'type' => $item->type,
             // On mappe les noms de la DB vers les noms attendus par le Front
-            'date' => $item->scheduled_at->toIso8601String(),
-            'endDate' => $item->end_date ? $item->end_date->toIso8601String() : null,
-            'link' => $item->url,
-            'imageUrl' => $item->image_url,
+            'date' => $item->scheduled_at->toIso8601String() ?? now()->addHour()->toIso8601String(),
+            'endDate' => $item->end_date ? $item->end_date->toIso8601String() : now()->addHour()->toIso8601String(),
+            'imageUrl' => $item->image_url ?? "https://raw.githubusercontent.com/nath-hub/portfolio/refs/heads/main/public/logo1.png", // pas dans ta DB
+            'link' => $item->url ?? "https://raw.githubusercontent.com/nath-hub/portfolio/refs/heads/main/public/logo1.png",
         ], 201);
-
     }
 
     // ── deleteAgendaEvent ─────────────────────────────────────────────────────
