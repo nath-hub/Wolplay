@@ -92,7 +92,7 @@ class AtelierController extends Controller
         ]);
 
         return response()->json(
-            $this->formatPostResponse($post),
+            $post,
             201
         );
     }
