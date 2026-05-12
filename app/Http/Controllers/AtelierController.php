@@ -162,8 +162,8 @@ class AtelierController extends Controller
             'imageCount'      => $post->image_count,
             'createdAt'       => $post->created_at->toIso8601String(),
             'updatedAt'       => $post->updated_at?->toIso8601String(),
-            'type'            => $post->type,
-            'sourceSnapshot'  => $post->source_snapshot,
+            'type'            => $post->type ?? "shared_etabli",
+            'sourceSnapshot'  => $post->source_snapshot ?? [],
             'author'          => [
                 'id'     => $post->author->id,
                 'pseudo' => $post->author->pseudo,
