@@ -25,12 +25,16 @@ class AtelierController extends Controller
         $items = $query->offset($offset)
             ->limit($limit)
             ->get()
-            ->map(fn ($post) => $this->formatPostResponse($post));
+            ->map(fn($post) => $this->formatPostResponse($post));
+
+        // Maintenant l'addition fonctionne parfaitement
+        $nextOffset = $offset + $limit;
+        $hasMore = $nextOffset < $total;
 
         return response()->json([
             'items'      => $items,
-            'nextOffset' => ($offset + $limit < $total) ? $offset + $limit : null,
-            'hasMore'    => $offset + $limit < $total,
+            'nextOffset' => $hasMore ? $nextOffset : null,
+            'hasMore'    => $hasMore,
         ]);
     }
 
@@ -53,7 +57,7 @@ class AtelierController extends Controller
         $items = $query->offset($offset)
             ->limit($limit)
             ->get()
-            ->map(fn ($post) => $this->formatPostResponse($post));
+            ->map(fn($post) => $this->formatPostResponse($post));
 
         return response()->json([
             'items'      => $items,
