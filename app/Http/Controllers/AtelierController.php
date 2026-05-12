@@ -18,7 +18,7 @@ class AtelierController extends Controller
         $offset = (int) $request->query('offset', 0);
         $limit = (int) $request->query('limit', 10);
 
-        $query = Post::with('author:id,pseudo,avatar')
+        $query = Post::with('author:id,pseudo,avatar_url')
             ->where('status', 'published')
             ->orderBy('created_at', 'desc');
 
