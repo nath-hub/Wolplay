@@ -291,7 +291,9 @@ class EmailVerificationController extends Controller
     )]
     public function getByPseudo($pseudo)
     {
-        $user = User::where('pseudo', $pseudo)->first();
+        $user = User::where('pseudo', $pseudo)
+            ->withCount(['videos', 'posts', 'collections', 'etablis', 'followers'])
+            ->first();
 
         if (!$user) {
             return response()->json(null, 200);
@@ -303,18 +305,18 @@ class EmailVerificationController extends Controller
             'name' => $user->name,
             "elements" => [
                 "agendaVisibility" => "full",
-                "avatar" => "https://raw.githubusercontent.com/Neihos/wolplay/refs/heads/main/public/images/fakeLive1.webp?token=GHSAT0AAAAAADZENW7Z4LC7NKGSZBSRFBPO2QDJKQQ",
-                "banner" => "https://raw.githubusercontent.com/Neihos/wolplay/refs/heads/main/public/images/fakeLive1.webp?token=GHSAT0AAAAAADZENW7Z4LC7NKGSZBSRFBPO2QDJKQQ",
-                "bio" => "Créateur de booknooks fantastiques.",
+                "avatar" => $user->avatar_url ?? "https://raw.githubusercontent.com/Neihos/wolplay/refs/heads/main/public/images/fakeLive1.webp?token=GHSAT0AAAAAADZENW7Z4LC7NKGSZBSRFBPO2QDJKQQ",
+                "banner" => $user->avatar_url ?? "https://raw.githubusercontent.com/Neihos/wolplay/refs/heads/main/public/images/fakeLive1.webp?token=GHSAT0AAAAAADZENW7Z4LC7NKGSZBSRFBPO2QDJKQQ",
+                "bio" => $user->bio ?? "Créateur de booknooks fantastiques.",
                 "counters" => [
-                    "followers" => 142,
-                    "collections" => 3,
-                    "videos" => 12,
-                    "wolplayPosts" => 8
+                    "followers"    => $user->followers_count,    // Dynamique
+                    "collections"  => $user->collections_count,  // Dynamique
+                    "videos"       => $user->videos_count,       // Dynamique
+                    "wolplayPosts" => $user->posts_count         // Dynamique
                 ],
                 "disciplines" => ["painting", "building"],
                 "displayName" => "Wolplaynator",
-                "level" => 5,
+                "level" => $user->level ?? 5,
                 "primaryContentTab" => "etabli",
                 "socialLinks" => [
                     "youtube" => "https://youtube.com/@wolplaynator"
@@ -323,7 +325,7 @@ class EmailVerificationController extends Controller
             'avatar' => $user->avatar,
             'bio' => $user->bio,
 
-            "planBadge" => "premium",
+            "planBadge" => $user->plan ?? "free",
             "atelier" => [
                 "entries" => [
                     ["id" => "etabli_001", "title" => "Booknook Poudlard"]
@@ -337,7 +339,9 @@ class EmailVerificationController extends Controller
 
     public function updateByPseudo(Request $request, $pseudo)
     {
-        $user = User::where('pseudo', $pseudo)->first();
+        $user = User::where('pseudo', $pseudo)
+            ->withCount(['videos', 'posts', 'collections', 'etablis', 'followers'])
+            ->first();
 
         if (!$user) {
             return response()->json(null, 200);
@@ -352,18 +356,18 @@ class EmailVerificationController extends Controller
             'name' => $user->name,
             "elements" => [
                 "agendaVisibility" => "full",
-                "avatar" => "https://raw.githubusercontent.com/Neihos/wolplay/refs/heads/main/public/images/fakeLive1.webp?token=GHSAT0AAAAAADZENW7Z4LC7NKGSZBSRFBPO2QDJKQQ",
-                "banner" => "https://raw.githubusercontent.com/Neihos/wolplay/refs/heads/main/public/images/fakeLive1.webp?token=GHSAT0AAAAAADZENW7Z4LC7NKGSZBSRFBPO2QDJKQQ",
-                "bio" => "Créateur de booknooks fantastiques.",
+                "avatar" => $user->avatar_url ?? "https://raw.githubusercontent.com/Neihos/wolplay/refs/heads/main/public/images/fakeLive1.webp?token=GHSAT0AAAAAADZENW7Z4LC7NKGSZBSRFBPO2QDJKQQ",
+                "banner" => $user->avatar_url ?? "https://raw.githubusercontent.com/Neihos/wolplay/refs/heads/main/public/images/fakeLive1.webp?token=GHSAT0AAAAAADZENW7Z4LC7NKGSZBSRFBPO2QDJKQQ",
+                "bio" => $user->bio ?? "Créateur de booknooks fantastiques.",
                 "counters" => [
-                    "followers" => 142,
-                    "collections" => 3,
-                    "videos" => 12,
-                    "wolplayPosts" => 8
+                    "followers"    => $user->followers_count,    // Dynamique
+                    "collections"  => $user->collections_count,  // Dynamique
+                    "videos"       => $user->videos_count,       // Dynamique
+                    "wolplayPosts" => $user->posts_count         // Dynamique
                 ],
                 "disciplines" => ["painting", "building"],
                 "displayName" => "Wolplaynator",
-                "level" => 5,
+                "level" => $user->level ?? 5,
                 "primaryContentTab" => "etabli",
                 "socialLinks" => [
                     "youtube" => "https://youtube.com/@wolplaynator"
@@ -372,7 +376,7 @@ class EmailVerificationController extends Controller
             'avatar' => $user->avatar,
             'bio' => $user->bio,
 
-            "planBadge" => "premium",
+            "planBadge" => $user->plan ?? "free",
             "atelier" => [
                 "entries" => [
                     ["id" => "etabli_001", "title" => "Booknook Poudlard"]
