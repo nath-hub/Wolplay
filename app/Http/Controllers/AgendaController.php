@@ -53,17 +53,15 @@ class AgendaController extends Controller
                 'id' => $item->id,
                 'title' => $item->title,
 
-                // 🔥 mapping vers le front
                 'date' => $item->scheduled_at,
-                'endDate' => $item->end_date,
+                'endDate' => $item->end_date ?? now()->addHour(),
 
-                'imageUrl' => $item->image_url, // pas dans ta DB
-                'link' => $item->url,
+                'imageUrl' => $item->image_url ?? "https://raw.githubusercontent.com/nath-hub/portfolio/refs/heads/main/public/logo1.png", // pas dans ta DB
+                'link' => $item->url ?? "https://raw.githubusercontent.com/nath-hub/portfolio/refs/heads/main/public/logo1.png",
             ];
         });
 
         return response()->json($formatted);
-
     }
 
     // ── addAgendaEvent ────────────────────────────────────────────────────────
