@@ -1203,3 +1203,33 @@ export const fetchAtelierFeed = async (offset = 0, limit = 10) => {
         throw error;
     }
 };
+
+
+export const fetchEtabliItems = async (creatorId, offset = 0, limit = 50) => {
+    try {
+        // Construction de l'URL avec les query params
+        const url = new URL(`${API_BASE}/etabli/items`);
+        url.searchParams.append('creatorId', creatorId);
+        url.searchParams.append('offset', offset);
+        url.searchParams.append('limit', limit);
+
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": `Bearer ${getToken()}`,
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "failed_to_fetch_items");
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Erreur fetchEtabliItems:", error);
+        throw error;
+    }
+};

@@ -73,6 +73,8 @@ Route::get('/videos/feed', [VideosController::class, 'feed']);
 // fetchAtelierFeed
 Route::get('/atelier/feed', [AtelierController::class, 'feed']);
 Route::get('/atelier/posts', [AtelierController::class, 'postsByCreator']);
+
+// fetchEtabliItems
 Route::get('/etabli/items', [EtabliController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {

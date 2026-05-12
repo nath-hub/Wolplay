@@ -16,8 +16,8 @@ class EtabliController extends Controller
     public function index(Request $request)
     {
         $creatorId = $request->query('creatorId');
-        $limit = $request->query('limit', 50);
-        $offset = $request->query('offset', 0);
+        $limit = (int) $request->query('limit', 50);
+        $offset = (int) $request->query('offset', 0);
 
         $query = Etabli::where('creator_id', $creatorId)
             ->orderBy('position', 'asc');
