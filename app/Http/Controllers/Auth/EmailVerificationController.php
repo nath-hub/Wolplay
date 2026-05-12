@@ -303,8 +303,8 @@ class EmailVerificationController extends Controller
             'name' => $user->name,
             "elements" => [
                 "agendaVisibility" => "full",
-                "avatar" => "https://cdn.wolplay.com/avatars/wolplaynator.webp",
-                "banner" => "https://cdn.wolplay.com/banners/wolplaynator.webp",
+                "avatar" => "https://raw.githubusercontent.com/Neihos/wolplay/refs/heads/main/public/images/fakeLive1.webp?token=GHSAT0AAAAAADZENW7Z4LC7NKGSZBSRFBPO2QDJKQQ",
+                "banner" => "https://raw.githubusercontent.com/Neihos/wolplay/refs/heads/main/public/images/fakeLive1.webp?token=GHSAT0AAAAAADZENW7Z4LC7NKGSZBSRFBPO2QDJKQQ",
                 "bio" => "Créateur de booknooks fantastiques.",
                 "counters" => [
                     "followers" => 142,
@@ -352,8 +352,8 @@ class EmailVerificationController extends Controller
             'name' => $user->name,
             "elements" => [
                 "agendaVisibility" => "full",
-                "avatar" => "https://cdn.wolplay.com/avatars/wolplaynator.webp",
-                "banner" => "https://cdn.wolplay.com/banners/wolplaynator.webp",
+                "avatar" => "https://raw.githubusercontent.com/Neihos/wolplay/refs/heads/main/public/images/fakeLive1.webp?token=GHSAT0AAAAAADZENW7Z4LC7NKGSZBSRFBPO2QDJKQQ",
+                "banner" => "https://raw.githubusercontent.com/Neihos/wolplay/refs/heads/main/public/images/fakeLive1.webp?token=GHSAT0AAAAAADZENW7Z4LC7NKGSZBSRFBPO2QDJKQQ",
                 "bio" => "Créateur de booknooks fantastiques.",
                 "counters" => [
                     "followers" => 142,
