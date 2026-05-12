@@ -301,8 +301,84 @@ class EmailVerificationController extends Controller
             'id' => $user->id,
             'pseudo' => $user->pseudo,
             'name' => $user->name,
+            "elements" => [
+                "agendaVisibility" => "full",
+                "avatar" => "https://cdn.wolplay.com/avatars/wolplaynator.webp",
+                "banner" => "https://cdn.wolplay.com/banners/wolplaynator.webp",
+                "bio" => "Créateur de booknooks fantastiques.",
+                "counters" => [
+                    "followers" => 142,
+                    "collections" => 3,
+                    "videos" => 12,
+                    "wolplayPosts" => 8
+                ],
+                "disciplines" => ["painting", "building"],
+                "displayName" => "Wolplaynator",
+                "level" => 5,
+                "primaryContentTab" => "etabli",
+                "socialLinks" => [
+                    "youtube" => "https://youtube.com/@wolplaynator"
+                ]
+            ],
             'avatar' => $user->avatar,
             'bio' => $user->bio,
+
+            "planBadge" => "premium",
+            "atelier" => [
+                "entries" => [
+                    ["id" => "etabli_001", "title" => "Booknook Poudlard"]
+                ]
+            ],
+
+            'created_at' => $user->created_at,
+        ]);
+    }
+
+
+    public function updateByPseudo(Request $request, $pseudo)
+    {
+        $user = User::where('pseudo', $pseudo)->first();
+
+        if (!$user) {
+            return response()->json(null, 200);
+        }
+
+        // Ici tu peux ajouter des validations et autorisations selon tes besoins
+        $user->update($request->only(['name', 'avatar', 'bio']));
+
+        return response()->json([
+            'id' => $user->id,
+            'pseudo' => $user->pseudo,
+            'name' => $user->name,
+            "elements" => [
+                "agendaVisibility" => "full",
+                "avatar" => "https://cdn.wolplay.com/avatars/wolplaynator.webp",
+                "banner" => "https://cdn.wolplay.com/banners/wolplaynator.webp",
+                "bio" => "Créateur de booknooks fantastiques.",
+                "counters" => [
+                    "followers" => 142,
+                    "collections" => 3,
+                    "videos" => 12,
+                    "wolplayPosts" => 8
+                ],
+                "disciplines" => ["painting", "building"],
+                "displayName" => "Wolplaynator",
+                "level" => 5,
+                "primaryContentTab" => "etabli",
+                "socialLinks" => [
+                    "youtube" => "https://youtube.com/@wolplaynator"
+                ]
+            ],
+            'avatar' => $user->avatar,
+            'bio' => $user->bio,
+
+            "planBadge" => "premium",
+            "atelier" => [
+                "entries" => [
+                    ["id" => "etabli_001", "title" => "Booknook Poudlard"]
+                ]
+            ],
+
             'created_at' => $user->created_at,
         ]);
     }

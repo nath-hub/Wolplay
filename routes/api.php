@@ -34,6 +34,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'notice'])->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
 
     Route::get('/public/profile/{pseudo}', [EmailVerificationController::class, 'getByPseudo']);
+    Route::patch('/public/profile/{pseudo}', [EmailVerificationController::class, 'updateByPseudo']);
 
 
 });
