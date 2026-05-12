@@ -154,11 +154,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/dashboard/wip/{postId}/pin',         [DashboardController::class, 'toggleWipPin']);
 
     // ── Atelier (Feed Social) ──────────────────────────────────────────────
+    // createAtelierPost
     Route::post('/atelier/posts',                      [AtelierController::class, 'store']);
     Route::patch('/atelier/posts/{postId}',            [AtelierController::class, 'update']);
     Route::delete('/atelier/posts/{postId}',           [AtelierController::class, 'destroy']);
 
     // ── Établi (Vitrine personnelle) ───────────────────────────────────────
+    // createEtabliItem
     Route::post('/etabli/items',                       [EtabliController::class, 'store']);
     Route::patch('/etabli/items/{itemId}',             [EtabliController::class, 'update']);
     Route::delete('/etabli/items/{itemId}',            [EtabliController::class, 'destroy']);

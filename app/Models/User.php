@@ -133,7 +133,7 @@ class User extends Authenticatable implements MustVerifyEmail
     /** Tous les posts (mur de l'Atelier) */
     public function posts(): HasMany
     {
-        return $this->hasMany(Post::class, 'author_id');
+        return $this->hasMany(Post::class, 'id');
     }
 
     /** WIP épinglé courant (1 max par créateur) */

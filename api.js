@@ -1233,3 +1233,59 @@ export const fetchEtabliItems = async (creatorId, offset = 0, limit = 50) => {
         throw error;
     }
 };
+
+
+export const createEtabliItem = async (itemData) => {
+    try {
+        const response = await fetch(`${API_BASE}/etabli/items`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": `Bearer ${getToken()}`,
+            },
+            // itemData doit contenir : title, description, images, status, isPinned
+            body: JSON.stringify(itemData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            // Laravel renvoie les erreurs de validation ici
+            throw new Error(data.message || "failed_to_create_item");
+        }
+
+        return data; // Retourne l'item formaté par formatEtabliResponse
+    } catch (error) {
+        console.error("Erreur createEtabliItem:", error);
+        throw error;
+    }
+};
+
+
+export const createAtelierPost = async (postData) => {
+    try {
+        const response = await fetch(`${API_BASE}/atelier/posts`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": `Bearer ${getToken()}`,
+            },
+            // postData doit contenir : { text: "...", images: ["url1", "url2"] }
+            body: JSON.stringify(postData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            // Gestion des erreurs de validation (ex: texte trop long ou manquant)
+            throw new Error(data.message || "failed_to_create_post");
+        }
+
+        return data; // Retourne le post formaté par formatPostResponse
+    } catch (error) {
+        console.error("Erreur createAtelierPost:", error);
+        throw error;
+    }
+};

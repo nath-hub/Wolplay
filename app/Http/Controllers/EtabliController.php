@@ -26,7 +26,7 @@ class EtabliController extends Controller
         $items = $query->offset($offset)
             ->limit($limit)
             ->get()
-            ->map(fn ($etabli) => $this->formatEtabliResponse($etabli));
+            ->map(fn($etabli) => $this->formatEtabliResponse($etabli));
 
         return response()->json([
             'items'      => $items,
@@ -177,6 +177,9 @@ class EtabliController extends Controller
             'isPinned'    => $etabli->is_pinned,
             'createdAt'   => $etabli->created_at->toIso8601String(),
             'updatedAt'   => $etabli->updated_at->toIso8601String(),
+            'type'           => 'shared_etabli', // La valeur attendue par Zod
+            'sourceSnapshot' => (object)[],      // Un objet vide au lieu de null
+
         ];
     }
 }
