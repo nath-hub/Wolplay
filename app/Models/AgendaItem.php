@@ -31,4 +31,16 @@ class AgendaItem extends Model
             }
         });
     }
+
+
+    protected $casts = [
+        'scheduled_at' => 'datetime',
+        'end_date' => 'datetime',
+    ];
+
+    // Si tu veux forcer le format ISO 8601 pour l'API JSON
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return $date->format('Y-m-d\TH:i:s\Z');
+    }
 }
