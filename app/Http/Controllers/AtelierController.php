@@ -91,8 +91,11 @@ class AtelierController extends Controller
             'source_snapshot' => null,
         ]);
 
+        // 3. CHARGEMENT DE LA RELATION
+        $post->load('author');
+
         return response()->json(
-            $post,
+            $this->formatPostResponse($post),
             201
         );
     }
@@ -165,9 +168,9 @@ class AtelierController extends Controller
             'type'            => $post->type ?? "shared_etabli",
             'sourceSnapshot'  => $post->source_snapshot ? $post->source_snapshot : (object)[],
             'author'          => [
-                'id'     => $post->author->id,
-                'pseudo' => $post->author->pseudo,
-                'avatar' => $post->author->avatar,
+                'id'     => $post->author?->id ?? $post->author_id,
+                'pseudo' => $post->author?->pseudo ?? 'Anonyme',
+                'avatar' => $post->author?->avatar,
             ],
         ];
 
