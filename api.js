@@ -153,14 +153,14 @@ export async function updatePassword(userId, currentPassword, newPassword) {
  * Changement d'email — envoie un lien de vérification.
  * @returns {Promise<{ pending: true }>}
  */
-export async function updateEmail(userId, newEmail, password) {
+export async function updateEmail(newEmail, password) {
     const res = await fetch(`${API_BASE}/auth/update-email`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
         },
-        body: JSON.stringify({ userId, newEmail, password }),
+        body: JSON.stringify({ newEmail, password }),
     });
 
     if (!res.ok) {
