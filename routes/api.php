@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AgendaController;
+use App\Http\Controllers\AtelierController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -8,12 +9,12 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\CreatorController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EtabliController;
 use App\Http\Controllers\FollowsController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\VideoDisciplinesController;
 use App\Http\Controllers\VideosController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 
 // ── Guest routes ───────────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
@@ -67,6 +68,12 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/creators/{profileId}/agenda', [AgendaController::class, 'index']);
 
 Route::get('/videos/feed', [VideosController::class, 'feed']);
+
+// Routes publiques pour Atelier et Établi (lecture seule)
+// fetchAtelierFeed
+Route::get('/atelier/feed', [AtelierController::class, 'feed']);
+Route::get('/atelier/posts', [AtelierController::class, 'postsByCreator']);
+Route::get('/etabli/items', [EtabliController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -143,6 +150,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/dashboard/wip',                     [DashboardController::class, 'updateWip']);
     // // toggleWipPin
     Route::post('/dashboard/wip/{postId}/pin',         [DashboardController::class, 'toggleWipPin']);
+
+    // ── Atelier (Feed Social) ──────────────────────────────────────────────
+    Route::post('/atelier/posts',                      [AtelierController::class, 'store']);
+    Route::patch('/atelier/posts/{postId}',            [AtelierController::class, 'update']);
+    Route::delete('/atelier/posts/{postId}',           [AtelierController::class, 'destroy']);
+
+    // ── Établi (Vitrine personnelle) ───────────────────────────────────────
+    Route::post('/etabli/items',                       [EtabliController::class, 'store']);
+    Route::patch('/etabli/items/{itemId}',             [EtabliController::class, 'update']);
+    Route::delete('/etabli/items/{itemId}',            [EtabliController::class, 'destroy']);
+    Route::put('/etabli/order',                        [EtabliController::class, 'updateOrder']);
 
     // ── Abonnements ───────────────────────────────────────────────────────
     // fetchCurrentPlan

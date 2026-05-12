@@ -31,11 +31,16 @@ class Post extends Model
         });
     }
 
-    protected $casts = [
-        'is_pinned'    => 'boolean',
-        'is_wip'       => 'boolean',
-        'wip_progress' => 'integer',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'is_pinned'      => 'boolean',
+            'is_wip'         => 'boolean',
+            'wip_progress'   => 'integer',
+            'images'         => 'array',
+            'source_snapshot' => 'array',
+        ];
+    }
 
     // ── Relations ──────────────────────────────────────────────────────────────
 
@@ -48,7 +53,7 @@ class Post extends Model
     /** Signalements sur ce post */
     public function reports(): HasMany
     {
-        return $this->hasMany(Report::class, 'target_id')
+        return $this->hasMany('App\Models\report', 'target_id')
             ->where('target_type', 'post');
     }
 
@@ -76,20 +81,41 @@ class Post extends Model
 
     // ── Helpers ────────────────────────────────────────────────────────────────
 
+    /**
+     * Nombre d'images
+     */
+    public function getImageCountAttribute(): int
+    {
+        return count($this->images ?? []);
+    }
+
     public function isVideo(): bool
     {
         return $this->post_type === 'video';
     }
+
     public function isWip(): bool
     {
         return $this->post_type === 'wip';
     }
+
     public function isPhoto(): bool
     {
         return $this->post_type === 'photo';
     }
+
     public function isText(): bool
     {
         return $this->post_type === 'text';
+    }
+
+    public function isSharedPost(): bool
+    {
+        return $this->type === 'shared_post';
+    }
+
+    public function isSharedEtabli(): bool
+    {
+        return $this->type === 'shared_etabli';
     }
 }

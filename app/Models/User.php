@@ -150,6 +150,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Collection::class, 'owner_id');
     }
 
+    /** Établis du créateur (vitrine personnelle) */
+    public function etablis(): HasMany
+    {
+        return $this->hasMany(Etabli::class, 'creator_id');
+    }
+
     /** Agenda (lives, sorties à venir…) */
     public function agendaItems(): HasMany
     {
@@ -229,7 +235,7 @@ class User extends Authenticatable implements MustVerifyEmail
     /** Signalements déposés par ce user */
     public function reports(): HasMany
     {
-        return $this->hasMany(Report::class, 'reporter_id');
+        return $this->hasMany('App\Models\report', 'reporter_id');
     }
 
     /** Actions de modération effectuées par ce user (admin/modo) */

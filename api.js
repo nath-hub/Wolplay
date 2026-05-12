@@ -1172,3 +1172,34 @@ export const updatePublicProfile = async (pseudo, elements) => {
         throw error;
     }
 };
+
+
+/**
+ * Récupère le flux de l'Atelier avec pagination
+ * @param {number} offset - Point de départ pour la pagination
+ * @param {number} limit - Nombre d'éléments à récupérer
+ */
+export const fetchAtelierFeed = async (offset = 0, limit = 10) => {
+    try {
+        const response = await fetch(`${API_BASE}/atelier/feed?offset=${offset}&limit=${limit}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                // Authorization si le flux est privé ou personnalisé
+                "Authorization": `Bearer ${getToken()}`,
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "failed_to_fetch_feed");
+        }
+
+        return await response.json();
+        // Retourne : { items: [], nextOffset: 10, hasMore: true }
+    } catch (error) {
+        console.error("Erreur fetchAtelierFeed:", error);
+        throw error;
+    }
+};
