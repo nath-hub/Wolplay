@@ -40,16 +40,16 @@ class FollowsController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse CreatorCard[]
      */
-    public function recommended(Request $request)
+    public function recommended(Request $request, $userId): JsonResponse
     {
         $limit      = (int) $request->query('limit', 6);
         $excludeIds = $request->query('excludeIds', []);
 
-        $followingIds = $request->user()->following()->pluck('creators.id');
+        $followingIds = $userId->following()->pluck('creators.id');
 
         $creators = User::query()
             ->whereNotIn('id', array_merge($followingIds->toArray(), (array) $excludeIds))
-            ->where('id', '!=', $request->user()->id)
+            ->where('id', '!=', $userId->id)
             ->withCount('followers')
             ->withCount('videos')
             ->where('video_count', '>', 0)

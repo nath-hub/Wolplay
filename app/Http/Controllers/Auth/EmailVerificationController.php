@@ -344,7 +344,7 @@ class EmailVerificationController extends Controller
             ->first();
 
         if (!$user) {
-            return response()->json(null, 200);
+            return response()->json(null, 401);
         }
 
         // Ici tu peux ajouter des validations et autorisations selon tes besoins
@@ -466,7 +466,7 @@ class EmailVerificationController extends Controller
         }
 
         if (!$user) {
-            return response()->json(null, 200);
+            return response()->json(null, 400);
         }
 
         return response()->json([

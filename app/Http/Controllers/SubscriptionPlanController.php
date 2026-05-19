@@ -71,7 +71,7 @@ class SubscriptionPlanController extends Controller
     }
 
     // ── cancelPremium ─────────────────────────────────────────────────────────
-    // DELETE /v1/subscription/premium
+    // DELETE /v1/subscription/cancel
     // @returns { success: boolean, plan: "free" }
 
     public function cancel(Request $request): JsonResponse
@@ -91,6 +91,6 @@ class SubscriptionPlanController extends Controller
             $user->update(['plan' => 'free']);
         });
 
-        return response()->json(['success' => true, 'plan' => 'free']);
+        return response()->json(['success' => false, 'plan' => 'free']);
     }
 }

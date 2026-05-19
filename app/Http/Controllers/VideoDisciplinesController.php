@@ -135,12 +135,15 @@ class VideoDisciplinesController extends Controller
         response: 403,
         description: 'Accès refusé (vous n\'êtes pas le propriétaire de ce profil)'
     )]
-    public function featuredIds(string $userId): JsonResponse
+    public function featuredIds(Request $request): JsonResponse
     {
         // $this->authorizeOwner($userId);
+        $request->validate([
+            'userId' => 'required|uuid|exists:users,id',
+        ]);
 
         $ids = DB::table('featured_videos')
-            ->where('user_id', $userId)
+            ->where('user_id', $request->input('userId'))
             ->orderBy('slot')
             ->pluck('video_id');
 
@@ -151,7 +154,7 @@ class VideoDisciplinesController extends Controller
     // Remplace les 6 slots d'un coup (ordre = position dans le tableau)
 
     #[OA\PUT(
-        path: '/api/users/{userId}/videos/featured',
+        path: '/api/videos/featured-ids',
         summary: 'Mettre à jour les IDs des vidéos mises en vedette',
         description: 'Remplace les IDs des vidéos sélectionnées pour le profil, triés par emplacement (slot).',
         tags: ['Creator Videos'],
@@ -175,23 +178,24 @@ class VideoDisciplinesController extends Controller
             ]
         )
     )]
-    public function updateFeatured(Request $request, string $userId): JsonResponse
+    public function updateFeatured(Request $request): JsonResponse
     {
-        $this->authorizeOwner($userId);
-
         $request->validate([
-            'ids'   => 'required|array|max:6',
-            'ids.*' => ['uuid', Rule::exists('videos', 'id')->where('creator_id', $userId)],
+            'userId' => 'required|uuid|exists:users,id',
+            'ids'    => 'required|array|max:6',
+            'ids.*'  => ['uuid', Rule::exists('videos', 'id')->where('creator_id', $request->input('userId'))],
         ]);
+
+        $this->authorizeOwner($request->input('userId'));
 
         $ids = $request->input('ids');
 
-        DB::transaction(function () use ($userId, $ids) {
-            DB::table('featured_videos')->where('user_id', $userId)->delete();
+        DB::transaction(function () use ($request, $ids) {
+            DB::table('featured_videos')->where('user_id', $request->input('userId'))->delete();
 
             foreach ($ids as $slot => $videoId) {
                 DB::table('featured_videos')->insert([
-                    'user_id'  => $userId,
+                    'user_id'  => $request->input('userId'),
                     'video_id' => $videoId,
                     'slot'     => $slot + 1,   // slots 1-6
                 ]);

@@ -35,7 +35,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'notice'])->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
 
     Route::get('/public/profile/{pseudo}', [EmailVerificationController::class, 'getByPseudo']);
-    Route::patch('/public/profile/{pseudo}', [EmailVerificationController::class, 'updateByPseudo']);
+
 
 
 });
@@ -47,6 +47,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
         ->middleware(['auth:sanctum', 'throttle:6,1'])
         ->name('verification.send');
+
+    Route::patch('/public/profile/{pseudo}', [EmailVerificationController::class, 'updateByPseudo']);
 
     Route::post('/auth/update-email', [EmailVerificationController::class, 'updateEmail']);
 
@@ -77,12 +79,14 @@ Route::get('/atelier/posts', [AtelierController::class, 'postsByCreator']);
 // fetchEtabliItems
 Route::get('/etabli/items', [EtabliController::class, 'index']);
 
+  Route::get('/creators/recommended/{userId}',           [FollowsController::class, 'recommended']);
+
 Route::middleware('auth:sanctum')->group(function () {
 
     // Follow & Recommandations
     Route::post('/creators/{creatorId}/follow',   [FollowsController::class, 'follow']);
     Route::delete('/creators/{creatorId}/follow', [FollowsController::class, 'unfollow']);
-    Route::get('/creators/recommended',           [FollowsController::class, 'recommended']);
+
 
     // fetchFollowStatus
     Route::get('/creators/{creatorId}/follow',         [FollowsController::class, 'status']);
@@ -128,9 +132,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // deletePinnedVideo
     Route::delete('/users/{userId}/videos/{videoId}',  [VideoDisciplinesController::class, 'destroy']);
     // fetchFeaturedVideoIds
-    Route::get('/users/{userId}/videos/featured',      [VideoDisciplinesController::class, 'featuredIds']);
+    Route::get('/videos/featured-ids',      [VideoDisciplinesController::class, 'featuredIds']);
     // updateFeaturedVideoIds
-    Route::put('/users/{userId}/videos/featured',      [VideoDisciplinesController::class, 'updateFeatured']);
+    Route::put('/videos/featured-ids',      [VideoDisciplinesController::class, 'updateFeatured']);
 
     // ── Agenda (gestion propriétaire) ─────────────────────────────────────
 
@@ -172,7 +176,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // // upgradeToPremium
     Route::post('/subscription/premium',               [SubscriptionPlanController::class, 'upgrade']);
     // // cancelPremium
-    Route::delete('/subscription/premium',             [SubscriptionPlanController::class, 'cancel']);
+    Route::post('/subscription/cancel',             [SubscriptionPlanController::class, 'cancel']);
 });
 
 

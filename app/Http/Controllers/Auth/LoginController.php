@@ -7,6 +7,7 @@ use App\Models\User;
 use Error;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -69,10 +70,6 @@ class LoginController extends Controller
         // Déterminer si c'est un email ou un pseudo
         $field = filter_var($request->identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'pseudo';
 
-        $credentials = [
-            $field => $request->identifier,
-            'password' => $request->password,
-        ];
 
         // Recherche insensible à la casse
         $user = User::whereRaw(
@@ -80,11 +77,18 @@ class LoginController extends Controller
             [Str::lower($request->identifier)]
         )->first();
 
-        // 1. Tentative de connexion
-        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+
+
+        // Vérification user + password
+        if (!$user || !Hash::check($request->password, $user->password)) {
+
             RateLimiter::hit($this->throttleKey($request));
 
-            throw new Error("Identifiant ou mot de passe incorrect");
+            return response()->json([
+                'success' => false,
+                'status' => 401,
+                'message' => 'Identifiant ou mot de passe incorrect',
+            ], 401);
         }
 
 

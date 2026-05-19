@@ -242,7 +242,7 @@ function getToken() {
  * Feed vidéos
  * @returns {Promise<Array>}
  */
-export async function fetchVideosFeed({
+export async function fetchVideoFeed({
     context = "global",
     creatorId = null,
     limit = 20,
@@ -570,7 +570,7 @@ export async function fetchCreatorVideos(
  * Suivre un créateur
  * @returns {Promise<{ following: true }>}
  */
-export async function followCreator(creatorId, token) {
+export async function followCreator(creatorId) {
     const res = await fetch(`${API_BASE}/creators/${creatorId}/follow`, {
         method: "POST",
         headers: {
@@ -592,7 +592,7 @@ export async function followCreator(creatorId, token) {
  * Se désabonner d’un créateur
  * @returns {Promise<{ following: false }>}
  */
-export async function unfollowCreator(creatorId, token) {
+export async function unfollowCreator(creatorId) {
     const res = await fetch(`${API_BASE}/creators/${creatorId}/follow`, {
         method: "DELETE",
         headers: {
@@ -614,6 +614,7 @@ export async function unfollowCreator(creatorId, token) {
  * @returns {Promise<CreatorCard[]>}
  */
 export async function fetchRecommendedCreators({
+    creatorId,
     limit = 6,
     excludeIds = [],
     token,
@@ -645,7 +646,7 @@ export async function fetchRecommendedCreators({
  * Vérifie si l'utilisateur suit un créateur
  * @returns {Promise<{ following: boolean }>}
  */
-export async function fetchFollowStatus(creatorId, token) {
+export async function fetchFollowStatus(creatorId) {
     const res = await fetch(`${API_BASE}/creators/${creatorId}/follow`, {
         headers: {
             Accept: "application/json",
@@ -665,7 +666,7 @@ export async function fetchFollowStatus(creatorId, token) {
  * Liste des créateurs suivis par un user
  * @returns {Promise<CreatorCard[]>}
  */
-export async function fetchFollowing(userId, token) {
+export async function fetchFollowing(userId) {
     const res = await fetch(`${API_BASE}/users/${userId}/following`, {
         headers: {
             Accept: "application/json",
@@ -685,7 +686,7 @@ export async function fetchFollowing(userId, token) {
  * Liste des followers d’un user
  * @returns {Promise<CreatorCard[]>}
  */
-export async function fetchFollowers(userId, token) {
+export async function fetchFollowers(userId) {
     const res = await fetch(`${API_BASE}/users/${userId}/followers`, {
         headers: {
             Accept: "application/json",
@@ -704,7 +705,7 @@ export async function fetchFollowers(userId, token) {
 /**
  * Vidéos du créateur (pinned)
  */
-export async function fetchPinnedVideos(userId, token) {
+export async function fetchPinnedVideos(userId) {
     const res = await fetch(
         `${API_BASE}/videos/pinned?userId=${encodeURIComponent(userId)}`,
         {
@@ -726,7 +727,7 @@ export async function fetchPinnedVideos(userId, token) {
 /**
  * Ajouter une vidéo
  */
-export async function addPinnedVideo(userId, data, token) {
+export async function addPinnedVideo(userId, data) {
     const res = await fetch(`${API_BASE}/videos/pinned`, {
         method: "POST",
         headers: {
@@ -748,7 +749,7 @@ export async function addPinnedVideo(userId, data, token) {
 /**
  * Supprimer une vidéo
  */
-export async function deletePinnedVideo(userId, videoId, token) {
+export async function deletePinnedVideo(userId, videoId) {
     const res = await fetch(`${API_BASE}/users/${userId}/videos/${videoId}`, {
         method: "DELETE",
         headers: {
@@ -769,8 +770,8 @@ export async function deletePinnedVideo(userId, videoId, token) {
  * IDs des vidéos mises en avant
  * @returns {Promise<string[]>}
  */
-export async function fetchFeaturedVideoIds(userId, token) {
-    const res = await fetch(`${API_BASE}/users/${userId}/videos/featured`, {
+export async function fetchFeaturedVideoIds(userId) {
+    const res = await fetch(`${API_BASE}/videos/featured-ids?userId=${encodeURIComponent(userId)}`, {
         headers: {
             Accept: "application/json",
             Authorization: `Bearer ${getToken()}`,
@@ -788,8 +789,8 @@ export async function fetchFeaturedVideoIds(userId, token) {
 /**
  * Mettre à jour les vidéos mises en avant
  */
-export async function updateFeaturedVideoIds(userId, ids, token) {
-    const res = await fetch(`${API_BASE}/users/${userId}/videos/featured`, {
+export async function updateFeaturedVideoIds(userId, ids) {
+    const res = await fetch(`${API_BASE}/videos/featured-ids?userId=${encodeURIComponent(userId)}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -811,7 +812,7 @@ export async function updateFeaturedVideoIds(userId, ids, token) {
  * Ajouter un événement agenda
  * @returns {Promise<AgendaItem>}
  */
-export async function addAgendaEvent(profileId, data, token) {
+export async function addAgendaEvent(profileId, data) {
     const res = await fetch(`${API_BASE}/creators/${profileId}/agenda`, {
         method: "POST",
         headers: {
@@ -834,7 +835,7 @@ export async function addAgendaEvent(profileId, data, token) {
  * Modifier un événement agenda
  * @returns {Promise<AgendaItem>}
  */
-export async function updateAgendaEvent(profileId, eventId, data, token) {
+export async function updateAgendaEvent(profileId, eventId, data) {
     const res = await fetch(
         `${API_BASE}/creators/${profileId}/agenda/${eventId}`,
         {
@@ -859,7 +860,7 @@ export async function updateAgendaEvent(profileId, eventId, data, token) {
 /**
  * Supprimer un événement agenda
  */
-export async function deleteAgendaEvent(profileId, eventId, token) {
+export async function deleteAgendaEvent(profileId, eventId) {
     const res = await fetch(
         `${API_BASE}/creators/${profileId}/agenda/${eventId}`,
         {
@@ -1035,8 +1036,8 @@ export async function upgradeToPremium() {
 // @returns { success: true, plan: "free" }
 
 export async function cancelPremium() {
-    const res = await fetch(`${API_BASE}/subscription/premium`, {
-        method: "DELETE",
+    const res = await fetch(`${API_BASE}/subscription/cancel`, {
+        method: "POST",
         headers: {
             Accept: "application/json",
             Authorization: `Bearer ${getToken()}`,
