@@ -18,7 +18,7 @@ return new class extends Migration
 
             $table->enum('post_type', ['video', 'wip', 'photo', 'text']);
 
-            // Contenu selon le type
+            // Contenu selon le type de post
             $table->text('content')->nullable();           // texte / légende WIP
             $table->string('media_url')->nullable();       // photo ou URL vidéo source
             $table->string('thumbnail_url')->nullable();   // miniature vidéo/photo

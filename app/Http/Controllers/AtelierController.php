@@ -76,22 +76,38 @@ class AtelierController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'text'              => 'required|string|max:5000',
-            'images'            => 'nullable|array',
-            'images.*'          => 'url',
+            'text'                        => 'required|string|max:5000',
+            'imageUrls'                   => 'nullable|array',
+            'imageUrls.*'                 => 'url',
+            'sourceSnapshot'              => 'nullable|array',
+            'sourceSnapshot.sourceId'     => 'required_with:sourceSnapshot|string',
+            'sourceSnapshot.status'       => 'required_with:sourceSnapshot|string',
+            'sourceSnapshot.description'  => 'required_with:sourceSnapshot|string',
+            'sourceSnapshot.images'       => 'required_with:sourceSnapshot|array',
+            'sourceSnapshot.images.*'     => 'url',
+            'sourceSnapshot.originCreateAt' => 'required_with:sourceSnapshot|string',
+            'sourceSnapshot.title'        => 'required_with:sourceSnapshot|string',
+            'type'                        => 'nullable|string',
         ]);
+
+        $thumbnailUrl = $validated['imageUrls'][0] ?? $validated['sourceSnapshot']['images'][0] ?? null;
+
+        if($validated['sourceSnapshot']['status'] === 'done') {
+            $validated['sourceSnapshot']['status'] = $validated['sourceSnapshot']['status'] === 'published' ? 'published' : 'hidden';
+        }
 
         $post = Post::create([
-            'author_id'  => $user->id,
-            'post_type'  => 'text', // Type Atelier par défaut
-            'content'    => $validated['text'],
-            'images'     => $validated['images'] ?? [],
-            'status'     => 'published',
-            'type'       => null,
-            'source_snapshot' => null,
+            'author_id'       => $user->id,
+            'post_type'       => 'text',
+            'content'         => $validated['text'] ?? $validated['sourceSnapshot']['description'] ?? '',
+            'images'          => $validated['imageUrls'] ?? [],
+            'status'          => 'published',
+            'type'            => $validated['type'] ?? null,
+            'source_snapshot' => $validated['sourceSnapshot'] ?? null,
+            'media_url'       => $validated['sourceSnapshot']['images'][0] ?? null,
+            'thumbnail_url'   => $thumbnailUrl,
         ]);
 
-        // 3. CHARGEMENT DE LA RELATION
         $post->load('author');
 
         return response()->json(
