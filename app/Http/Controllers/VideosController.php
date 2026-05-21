@@ -145,23 +145,47 @@ class VideosController extends Controller
         response: 404,
         description: 'Vidéo actuelle non trouvée'
     )]
-    public function next(Request $request, string $currentVideoId): JsonResponse
+    public function next(Request $request, string $currentVideoId = null): JsonResponse
     {
+        if ($currentVideoId) {
+            $request->merge(['current_video_id' => $currentVideoId]);
+        }
+
         $request->validate([
-            'context'    => 'sometimes|string',
-            'creator_id' => 'sometimes|uuid',
+            'current_video_id' => 'required_without:currentVideoId|uuid',
+            'currentVideoId'   => 'sometimes|uuid',
+            'context'          => 'sometimes|string|in:global,creator,tutorials,collections,wolplays,following',
+            'creator_id'       => 'sometimes|uuid',
+            'creatorId'        => 'sometimes|uuid',
         ]);
 
+        $currentVideoId = $request->input('current_video_id');
         $current = Video::findOrFail($currentVideoId);
         $context = $request->input('context', 'global');
+        $creatorId = $request->input('creator_id', $request->input('creatorId', $current->creator_id));
 
         $query = Video::with(['creator', 'category'])
             ->published()
             ->where('id', '!=', $currentVideoId)
             ->where('published_at', '<=', $current->published_at);
 
-        if ($context === 'creator') {
-            $query->where('creator_id', $request->input('creator_id', $current->creator_id));
+        match ($context) {
+            'tutorials'   => $query->byCategory('Tutorials'),
+            'collections' => $query->byCategory('Collections'),
+            'wolplays'    => $query->byCategory('Wolplays'),
+            'creator'     => $query->where('creator_id', $creatorId),
+            'following'   => $query->whereIn('creator_id', function ($sub) use ($request) {
+                $sub->select('followed_id')
+                    ->from('follows')
+                    ->where('follower_id', $request->user()?->id);
+            }),
+            default => $query,
+        };
+
+        if ($context === 'following' && !$request->user()) {
+            return response()->json([
+                'message' => 'Authentication required for following context',
+            ], 401);
         }
 
         $next = $query->latest('published_at')->first();
@@ -464,7 +488,7 @@ class VideosController extends Controller
     // ── fetchTutorialSpotlight ────────────────────────────────────────────────
 
     #[OA\Get(
-        path: '/api/videos/tutorial/spotlight',
+        path: '/api/tutorial/spotlight',
         summary: 'Vidéos Tutoriels en vedette',
         description: 'Retourne 4 vidéos Tutoriels sélectionnées aléatoirement.',
         tags: ['Videos'],
@@ -489,7 +513,7 @@ class VideosController extends Controller
             ->limit(4)
             ->get();
 
-        return response()->json(VideoResource::collection($videos));
+        return response()->json(VideoResource::collection($videos) ?? null);
     }
 
     // ── fetchCollectionVideos ─────────────────────────────────────────────────

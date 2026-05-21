@@ -11,6 +11,7 @@ use App\Http\Controllers\CreatorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EtabliController;
 use App\Http\Controllers\FollowsController;
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\VideoDisciplinesController;
 use App\Http\Controllers\VideosController;
@@ -79,7 +80,13 @@ Route::get('/atelier/posts', [AtelierController::class, 'postsByCreator']);
 // fetchEtabliItems
 Route::get('/etabli/items', [EtabliController::class, 'index']);
 
-  Route::get('/creators/recommended/{userId}',           [FollowsController::class, 'recommended']);
+// Next video aliases
+Route::get('/next/videos', [VideosController::class, 'next']);
+Route::get('/next/videos/{currentVideoId}', [VideosController::class, 'next']);
+// Route::get('/videos/next', [VideosController::class, 'next']);
+// Route::get('/videos/next/{currentVideoId}', [VideosController::class, 'next']);
+
+//   Route::get('/creators/recommended/{userId}',           [FollowsController::class, 'recommended']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -130,7 +137,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // addPinnedVideo
     Route::post('/videos/pinned',              [VideoDisciplinesController::class, 'store']);
     // deletePinnedVideo
-    Route::delete('/users/{userId}/videos/{videoId}',  [VideoDisciplinesController::class, 'destroy']);
+    Route::delete('/videos/pinned/{videoId}',  [VideoDisciplinesController::class, 'destroy']);
     // fetchFeaturedVideoIds
     Route::get('/videos/featured-ids',      [VideoDisciplinesController::class, 'featuredIds']);
     // updateFeaturedVideoIds
@@ -174,13 +181,15 @@ Route::middleware('auth:sanctum')->group(function () {
     // fetchCurrentPlan
     Route::get('/subscription',                        [SubscriptionPlanController::class, 'current']);
     // // upgradeToPremium
-    Route::post('/subscription/premium',               [SubscriptionPlanController::class, 'upgrade']);
+    Route::post('/subscription/upgrade',               [SubscriptionPlanController::class, 'upgrade']);
     // // cancelPremium
     Route::post('/subscription/cancel',             [SubscriptionPlanController::class, 'cancel']);
+
+    // ── Images ─────────────────────────────────────────────────────────────
+    // renewImageUrl
+    Route::patch('/images/renew',                      [ImageController::class, 'renewUrl']);
 });
 
-
-Route::get('/next/videos', [VideosController::class, 'next']);
 Route::get('/featured/videos', [VideosController::class, 'featured']);
 Route::get('/home/showcase', [VideosController::class, 'homeShowcase']);
 Route::get('/home/creators', [VideosController::class, 'homeCreators']);
@@ -189,9 +198,9 @@ Route::get('/wolplay/spotlight', [VideosController::class, 'wolplaySpotlight']);
 Route::get('/wolplay/creators', [VideosController::class, 'wolplayVideos']);
 Route::get('/videos/tutorial', [VideosController::class, 'tutorialVideos']);
 Route::get('/all_videos/{videoId}', [VideosController::class, 'show']);
-Route::get('/videos/tutorial/spotlight', [VideosController::class, 'tutorialSpotlight']);
+Route::get('/tutorials/spotlight', [VideosController::class, 'tutorialSpotlight']);
 
-Route::get('/videos/collection/spotlights', [VideosController::class, 'collectionSpotlights']);
+Route::get('/collection/spotlights', [VideosController::class, 'collectionSpotlights']);
 Route::get('/videos/creator/{creatorId}', [VideosController::class, 'creatorVideos']);
 Route::get('/home/collection', [VideosController::class, 'homeCollection']);
 // fetchAgendaEvents

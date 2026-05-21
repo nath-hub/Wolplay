@@ -34,8 +34,9 @@ class Etabli extends Model
     protected function casts(): array
     {
         return [
-            'images'    => 'array',
-            'is_pinned' => 'boolean',
+            'images'            => 'array',
+            'image_expirations' => 'array',
+            'is_pinned'         => 'boolean',
         ];
     }
 

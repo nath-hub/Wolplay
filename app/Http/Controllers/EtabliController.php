@@ -79,28 +79,26 @@ class EtabliController extends Controller
     public function update(Request $request, $itemId)
     {
         $user = Auth::user();
-        $etabli = Etabli::findOrFail($itemId);
+        $etabli = Etabli::where('id', $itemId)->where('creator_id', $user->id)->first();
 
         // Vérifier que l'user est le créateur
-        if ($etabli->creator_id !== $user->id) {
+        if (!$etabli) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $validated = $request->validate([
             'title'       => 'sometimes|required|string|max:255',
             'description' => 'nullable|string|max:5000',
-            'images'      => 'nullable|array',
-            'images.*'    => 'url',
+            'imageUrls'      => 'nullable|array',
+            'imageUrls.*'    => 'url',
             'status'      => 'nullable|in:wip,done',
-            'isPinned'    => 'nullable|boolean',
         ]);
 
         $etabli->update([
             'title'       => $validated['title'] ?? $etabli->title,
             'description' => $validated['description'] ?? $etabli->description,
-            'images'      => $validated['images'] ?? $etabli->images,
-            'status'      => $validated['status'] ?? $etabli->status,
-            'is_pinned'   => $validated['isPinned'] ?? $etabli->is_pinned,
+            'images'      => $validated['imageUrls'] ?? $etabli->images,
+            'status'      => $validated['status'] ?? $etabli->status, 
         ]);
 
         return response()->json($this->formatEtabliResponse($etabli));
@@ -113,10 +111,10 @@ class EtabliController extends Controller
     public function destroy($itemId)
     {
         $user = Auth::user();
-        $etabli = Etabli::findOrFail($itemId);
+        $etabli = Etabli::where('id', $itemId)->where('creator_id', $user->id)->first();
 
         // Vérifier que l'user est le créateur
-        if ($etabli->creator_id !== $user->id) {
+        if (!$etabli) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -132,20 +130,30 @@ class EtabliController extends Controller
 
     /**
      * PUT /api/etabli/order
-     * Réordonne les établis
+     * Réordonne les établis et gère l'épinglage
      */
     public function updateOrder(Request $request)
     {
         $user = Auth::user();
 
         $validated = $request->validate([
-            'order' => 'required|array',
-            'order.*' => 'uuid|exists:etablis,id',
+            'creatorId'   => 'required|uuid',
+            'orderedIds'  => 'required|array',
+            'orderedIds.*' => 'uuid|exists:etablis,id',
+            'pinnedId'    => 'nullable|uuid|exists:etablis,id',
         ]);
 
+        $creatorId = $validated['creatorId'];
+        $orderedIds = $validated['orderedIds'];
+        $pinnedId = $validated['pinnedId'];
+
+        // Vérifier que le créateur correspond à l'utilisateur connecté
+        if ($creatorId !== $user->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         // Vérifier que tous les établis appartiennent à l'user
-        $etablis = Etabli::whereIn('id', $validated['order'])
-            ->get();
+        $etablis = Etabli::whereIn('id', $orderedIds)->get();
 
         foreach ($etablis as $etabli) {
             if ($etabli->creator_id !== $user->id) {
@@ -153,8 +161,22 @@ class EtabliController extends Controller
             }
         }
 
+        // Réorganiser avec pinnedId en premier
+        $finalOrder = $orderedIds;
+        if ($pinnedId && in_array($pinnedId, $orderedIds)) {
+            $finalOrder = array_filter($orderedIds, fn($id) => $id !== $pinnedId);
+            array_unshift($finalOrder, $pinnedId);
+        }
+
+        // Réinitialiser tous les pinned à false, puis mettre à jour uniquement le pinnedId
+        Etabli::where('creator_id', $user->id)->update(['is_pinned' => false]);
+
+        if ($pinnedId) {
+            Etabli::where('id', $pinnedId)->update(['is_pinned' => true]);
+        }
+
         // Mettre à jour les positions
-        foreach ($validated['order'] as $position => $id) {
+        foreach ($finalOrder as $position => $id) {
             Etabli::where('id', $id)->update(['position' => $position]);
         }
 

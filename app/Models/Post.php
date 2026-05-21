@@ -34,11 +34,12 @@ class Post extends Model
     protected function casts(): array
     {
         return [
-            'is_pinned'      => 'boolean',
-            'is_wip'         => 'boolean',
-            'wip_progress'   => 'integer',
-            'images'         => 'array',
-            'source_snapshot' => 'array',
+            'is_pinned'            => 'boolean',
+            'is_wip'               => 'boolean',
+            'wip_progress'         => 'integer',
+            'images'               => 'array',
+            'image_expirations'    => 'array',
+            'source_snapshot'      => 'array',
         ];
     }
 

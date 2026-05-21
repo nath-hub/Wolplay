@@ -144,14 +144,20 @@ class CreatorController extends Controller
     public function recommended(Request $request): JsonResponse
     {
         $request->validate([
+            'userId'      => 'sometimes|uuid|exists:users,id',
             'limit'       => 'sometimes|integer|min:1|max:20',
+            'excludeIds'  => 'sometimes|array',
+            'excludeIds.*' => 'uuid',
             'exclude_ids' => 'sometimes|array',
             'exclude_ids.*' => 'uuid',
         ]);
 
-        $userId     = $request->user()?->id;
+        $userId     = $request->query('userId') ?? $request->user()?->id;
         $limit      = $request->integer('limit', 6);
-        $excludeIds = $request->input('exclude_ids', []);
+        $excludeIds = array_merge(
+            (array) $request->query('excludeIds', []),
+            (array) $request->query('exclude_ids', [])
+        );
 
         $query = User::with(['disciplines' => fn ($q) => $q->limit(3)])
             ->withCount('publishedVideos as video_count')
@@ -161,7 +167,6 @@ class CreatorController extends Controller
             ->having('video_count', '>', 0)
             ->whereNotIn('id', $excludeIds);
 
-        // Exclure ceux déjà suivis par l'utilisateur connecté
         if ($userId) {
             $query->whereNotIn('id', function ($sub) use ($userId) {
                 $sub->select('followed_id')
@@ -170,10 +175,10 @@ class CreatorController extends Controller
             })->where('id', '!=', $userId);
         }
 
-        // Scoring : premium d'abord, puis niveau, puis random
         $creators = $query
             ->orderByRaw("CASE WHEN plan = 'premium' THEN 0 WHEN plan = 'pro' THEN 1 ELSE 2 END")
             ->orderByDesc('level')
+            ->orderByDesc('video_count')
             ->inRandomOrder()
             ->limit($limit)
             ->get();

@@ -433,7 +433,7 @@ class VideoDisciplinesController extends Controller
 
     // ── deletePinnedVideo ─────────────────────────────────────────────────────
     #[OA\Delete(
-        path: '/api/users/{userId}/videos/{videoId}',
+        path: '/api/videos/pinned/{videoId}',
         summary: 'Supprimer une vidéo',
         description: 'Supprime une vidéo appartenant à l\'utilisateur. Cela retire également la vidéo de sa sélection "En vedette" si elle y était présente.',
         tags: ['Creator Videos'],

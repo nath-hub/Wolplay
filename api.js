@@ -280,13 +280,17 @@ export async function fetchNextVideo(
     currentVideoId,
     { context = "global", creatorId = null } = {},
 ) {
+    if (!currentVideoId) {
+        throw new Error("currentVideoId is required");
+    }
+
     const params = new URLSearchParams();
 
     if (context) params.append("context", context);
-    if (creatorId) params.append("creator_id", creatorId);
+    if (creatorId) params.append("creatorId", creatorId);
 
     const res = await fetch(
-        `${API_BASE}/next/videos/${currentVideoId}?${params.toString()}`,
+        `${API_BASE}/videos/next/${currentVideoId}?${params.toString()}`,
         {
             method: "GET",
             headers: {
@@ -490,7 +494,7 @@ export async function fetchTutorialVideos({
  * Spotlight tutoriels
  */
 export async function fetchTutorialSpotlight() {
-    const res = await fetch(`${API_BASE}/videos/tutorial/spotlight`, {
+    const res = await fetch(`${API_BASE}/tutorials/spotlight`, {
         headers: { Accept: "application/json" },
     });
 
@@ -502,11 +506,12 @@ export async function fetchTutorialSpotlight() {
     return await res.json();
 }
 
+
 /**
  * Spotlights collections (pro + premium)
  */
 export async function fetchCollectionSpotlights() {
-    const res = await fetch(`${API_BASE}/videos/collection/spotlights`, {
+    const res = await fetch(`${API_BASE}/collection/spotlights`, {
         headers: { Accept: "application/json" },
     });
 
@@ -614,13 +619,16 @@ export async function unfollowCreator(creatorId) {
  * @returns {Promise<CreatorCard[]>}
  */
 export async function fetchRecommendedCreators({
+    userId,
     creatorId,
     limit = 6,
     excludeIds = [],
     token,
 } = {}) {
     const params = new URLSearchParams();
+    const effectiveUserId = userId ?? creatorId;
 
+    if (effectiveUserId) params.append("userId", effectiveUserId);
     if (limit) params.append("limit", limit);
 
     if (excludeIds.length) {
@@ -630,7 +638,7 @@ export async function fetchRecommendedCreators({
     const res = await fetch(`${API_BASE}/creators/recommended?${params}`, {
         headers: {
             Accept: "application/json",
-            Authorization: `Bearer ${getToken()}`,
+            Authorization: `Bearer ${token ?? getToken()}`,
         },
     });
 
@@ -750,7 +758,7 @@ export async function addPinnedVideo(userId, data) {
  * Supprimer une vidéo
  */
 export async function deletePinnedVideo(userId, videoId) {
-    const res = await fetch(`${API_BASE}/users/${userId}/videos/${videoId}`, {
+    const res = await fetch(`${API_BASE}/videos/pinned/${videoId}`, {
         method: "DELETE",
         headers: {
             Accept: "application/json",
@@ -1006,11 +1014,11 @@ export async function fetchCurrentPlan() {
 }
 
 // upgradeToPremium
-// POST /subscription/premium
+// POST /subscription/upgrade
 // @returns { success: true, plan: "premium" }
 
 export async function upgradeToPremium() {
-    const res = await fetch(`${API_BASE}/subscription/premium`, {
+    const res = await fetch(`${API_BASE}/subscription/upgrade`, {
         method: "POST",
         headers: {
             Accept: "application/json",
@@ -1175,6 +1183,33 @@ export const updatePublicProfile = async (pseudo, elements) => {
 };
 
 
+export const updateEtabliItem = async (etabliId, elements) => {
+    try {
+        const response = await fetch(`${API_BASE}/etabli/items/${etabliId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                Authorization: `Bearer ${getToken()}`,
+            },
+            body: JSON.stringify(elements),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            // Gestion des erreurs de validation (422) ou autres
+            throw new Error(data.message || "update_failed");
+        }
+
+        return data; // Retourne l'objet utilisateur complet formaté par ton contrôleur
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour du profil:", error);
+        throw error;
+    }
+};
+
+
 /**
  * Récupère le flux de l'Atelier avec pagination
  * @param {number} offset - Point de départ pour la pagination
@@ -1289,4 +1324,101 @@ export const createAtelierPost = async (postData) => {
         console.error("Erreur createAtelierPost:", error);
         throw error;
     }
+};
+
+export const deleteAtelierPost = async (postId) => {
+    if (!postId) {
+        throw new Error("postId is required");
+    }
+
+    const response = await fetch(`${API_BASE}/atelier/posts/${postId}`, {
+        method: "DELETE",
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${getToken()}`,
+        },
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "failed_to_delete_post");
+    }
+
+    return null;
+};
+
+
+
+export const deleteEtabliItem = async (etabliId) => {
+    if (!etabliId) {
+        throw new Error("etabliId is required");
+    }
+
+    const response = await fetch(`${API_BASE}/etabli/items/${etabliId}`, {
+        method: "DELETE",
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${getToken()}`,
+        },
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "failed_to_delete_etabli");
+    }
+
+    return null;
+};
+
+
+
+export const renewImageUrl = async (params) => {
+    if (!params.entityType || !params.entityId || params.imageIndex === undefined || !params.newUrl) {
+        throw new Error("entityType, entityId, imageIndex, and newUrl are required");
+    }
+
+    const response = await fetch(`${API_BASE}/images/renew`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(params),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || "failed_to_renew_image");
+    }
+
+    return data;
+};
+
+export const updateEtabliOrder = async (creatorId, orderedIds, pinnedId = null) => {
+    if (!creatorId || !orderedIds || !Array.isArray(orderedIds)) {
+        throw new Error("creatorId and orderedIds array are required");
+    }
+
+    const response = await fetch(`${API_BASE}/etabli/order`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+            creatorId,
+            orderedIds,
+            pinnedId,
+        }),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "failed_to_update_etabli_order");
+    }
+
+    return null;
 };
