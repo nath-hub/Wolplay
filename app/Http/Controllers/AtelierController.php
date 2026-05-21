@@ -186,7 +186,7 @@ class AtelierController extends Controller
             'author'          => [
                 'id'     => $post->author?->id ?? $post->author_id,
                 'pseudo' => $post->author?->pseudo ?? 'Anonyme',
-                'avatar' => $post->author?->avatar,
+                'avatar' => $post->author?->avatar ?? "",
             ],
         ];
 
