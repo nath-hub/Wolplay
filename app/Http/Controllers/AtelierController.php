@@ -76,7 +76,7 @@ class AtelierController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'text'                        => 'required|string|max:5000',
+            'text'                        => 'nullable|string|max:5000',
             'imageUrls'                   => 'nullable|array',
             'imageUrls.*'                 => 'url',
             'sourceSnapshot'              => 'nullable|array',
